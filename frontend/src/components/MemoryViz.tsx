@@ -50,7 +50,7 @@ export function MemoryViz() {
   const lines = code.split('\n');
 
   return (
-    <div className="flex h-full bg-[#0a0a0a]">
+    <div className="flex h-full bg-[#161618] overflow-hidden">
       {/* Left: Code Editor */}
       <div className="w-1/2 px-8 py-6 border-r border-[#252525] flex flex-col">
         <h2 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-4">CODE</h2>
@@ -115,24 +115,25 @@ export function MemoryViz() {
         </div>
 
         {/* Stdin */}
-        <div className="mt-4">
-          <label className="font-title text-neutral-600 text-xs tracking-[0.15em] mb-2 block">STDIN</label>
+        <div className="mt-3">
+          <label className="text-neutral-500 text-[10px] mb-1 block">입력 (stdin)</label>
           <textarea
             value={stdin}
             onChange={(e) => setStdin(e.target.value)}
-            placeholder="e.g. 3 5"
-            className="w-full h-12 bg-transparent border-b border-[#252525] font-mono text-sm p-0 pt-2 resize-none focus:border-white transition-colors text-neutral-300 placeholder-neutral-700"
+            placeholder="예: 3 5"
+            className="w-full h-10 bg-[#1a1a1a] rounded-lg font-mono text-xs p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#3182f6] text-white placeholder-neutral-600"
           />
         </div>
 
         {/* Controls */}
-        <div className="mt-4 flex items-center gap-4">
+        <div className="mt-3 flex items-center gap-3">
           <button
             onClick={handleTrace}
             disabled={isLoading}
-            className="font-title px-6 py-2 text-xs tracking-[0.15em] border border-white bg-white text-black hover:bg-transparent hover:text-white disabled:opacity-30 transition-all duration-300"
+            className="text-[11px] rounded-full text-white disabled:opacity-40"
+            style={{ padding: '8px 18px', backgroundColor: '#3182f6' }}
           >
-            {isLoading ? 'TRACING...' : 'TRACE'}
+            {isLoading ? '분석중...' : '분석'}
           </button>
 
           {steps.length > 0 && (
@@ -140,19 +141,21 @@ export function MemoryViz() {
               <button
                 onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                 disabled={currentStep === 0}
-                className="font-title px-3 py-2 text-neutral-500 hover:text-white disabled:opacity-30 transition-colors"
+                className="text-[11px] rounded-full hover:text-white disabled:opacity-30"
+                style={{ padding: '8px 16px', backgroundColor: '#252530', color: '#999' }}
               >
-                PREV
+                이전
               </button>
-              <span className="font-title text-neutral-600 text-xs tracking-wide">
+              <span className="text-neutral-500 text-[11px] min-w-[50px] text-center">
                 {currentStep + 1} / {steps.length}
               </span>
               <button
                 onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
                 disabled={currentStep === steps.length - 1}
-                className="font-title px-3 py-2 text-neutral-500 hover:text-white disabled:opacity-30 transition-colors"
+                className="text-[11px] rounded-full hover:text-white disabled:opacity-30"
+                style={{ padding: '8px 16px', backgroundColor: '#252530', color: '#999' }}
               >
-                NEXT
+                다음
               </button>
             </>
           )}

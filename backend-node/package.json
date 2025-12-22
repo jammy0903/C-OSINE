@@ -10,6 +10,8 @@
     "seed": "ts-node prisma/seed.ts",
     "backup": "ts-node scripts/backup.ts",
     "restore": "ts-node scripts/backup.ts restore",
+    "import-tc": "ts-node scripts/import-testcases.ts",
+    "import-tc:watch": "ts-node scripts/import-testcases.ts watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

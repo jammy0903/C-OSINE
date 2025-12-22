@@ -1,0 +1,25 @@
+{
+  "solution": "#include <stdio.h>\n\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n    \n    for (int i = 0; i < N; i++) {\n        printf(\"moo\\n\");\n    }\n    \n    return 0;\n}",
+  "testCases": [
+    {
+      "input": "1",
+      "output": "moo\n"
+    },
+    {
+      "input": "3",
+      "output": "moo\nmoo\nmoo\n"
+    },
+    {
+      "input": "5",
+      "output": "moo\nmoo\nmoo\nmoo\nmoo\n"
+    },
+    {
+      "input": "10",
+      "output": "moo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\n"
+    },
+    {
+      "input": "100",
+      "output": "moo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\nmoo\n"
+    }
+  ]
+}

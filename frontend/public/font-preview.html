@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Font Preview - COSLAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700&family=Gugi&family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Inter:wght@400;600&family=Noto+Sans+KR:wght@400;700&family=Orbit&family=Orbitron:wght@400;700&family=Rajdhani:wght@400;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      padding: 40px;
+    }
+    h1 {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      color: #666;
+      margin-bottom: 60px;
+    }
+    .options {
+      display: flex;
+      gap: 40px;
+      overflow-x: auto;
+      padding-bottom: 20px;
+    }
+    .option {
+      min-width: 400px;
+      flex-shrink: 0;
+      border: 1px solid #252525;
+      padding: 40px;
+      transition: border-color 0.3s;
+    }
+    .option:hover {
+      border-color: #fff;
+    }
+    .option-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .preview-section {
+      margin-bottom: 40px;
+    }
+    .label {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: #444;
+      margin-bottom: 10px;
+    }
+
+    /* Option A */
+    .option-a .logo-en { font-family: 'Orbit', sans-serif; font-size: 32px; letter-spacing: 0.1em; }
+    .option-a .logo-kr { font-family: 'Black Han Sans', sans-serif; font-size: 32px; }
+    .option-a .title-en { font-family: 'Orbit', sans-serif; font-size: 14px; letter-spacing: 0.2em; }
+    .option-a .title-kr { font-family: 'Black Han Sans', sans-serif; font-size: 16px; }
+    .option-a .body-en { font-family: 'Space Grotesk', sans-serif; font-size: 14px; line-height: 1.6; color: #aaa; }
+    .option-a .body-kr { font-family: 'Gothic A1', sans-serif; font-size: 14px; line-height: 1.8; color: #aaa; }
+
+    /* Option B */
+    .option-b .logo-en { font-family: 'Rajdhani', sans-serif; font-size: 36px; font-weight: 700; letter-spacing: 0.05em; }
+    .option-b .logo-kr { font-family: 'Do Hyeon', sans-serif; font-size: 32px; }
+    .option-b .title-en { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.15em; }
+    .option-b .title-kr { font-family: 'Do Hyeon', sans-serif; font-size: 16px; }
+    .option-b .body-en { font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; color: #aaa; }
+    .option-b .body-kr { font-family: 'Noto Sans KR', sans-serif; font-size: 14px; line-height: 1.8; color: #aaa; }
+
+    /* Option C */
+    .option-c .logo-en { font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.1em; }
+    .option-c .logo-kr { font-family: 'Gugi', sans-serif; font-size: 28px; }
+    .option-c .title-en { font-family: 'Orbitron', sans-serif; font-size: 12px; letter-spacing: 0.2em; }
+    .option-c .title-kr { font-family: 'Gugi', sans-serif; font-size: 14px; }
+    .option-c .body-en { font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; line-height: 1.6; color: #aaa; }
+    .option-c .body-kr { font-family: 'IBM Plex Sans KR', sans-serif; font-size: 14px; line-height: 1.8; color: #aaa; }
+
+    /* Status colors preview */
+    .status-row {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .status {
+      padding: 8px 16px;
+      border: 1px solid;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+    }
+    .status.success { color: #4ade80; border-color: #4ade80; }
+    .status.error { color: #f87171; border-color: #f87171; }
+    .status.warning { color: #fbbf24; border-color: #fbbf24; }
+
+    /* Mock UI */
+    .mock-ui {
+      margin-top: 40px;
+      padding: 30px;
+      background: #111;
+      border: 1px solid #252525;
+    }
+    .mock-header {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #252525;
+      margin-bottom: 20px;
+    }
+    .mock-nav {
+      display: flex;
+      gap: 30px;
+    }
+    .mock-nav span {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: #666;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .mock-nav span:hover { color: #fff; }
+    .mock-nav span.active { color: #fff; border-bottom: 1px solid #fff; padding-bottom: 4px; }
+    .mock-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .mock-panel {
+      background: #0a0a0a;
+      padding: 20px;
+      border: 1px solid #252525;
+    }
+    .mock-panel-title {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: #666;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>FONT PREVIEW</h1>
+
+  <div class="options">
+    <!-- Option A -->
+    <div class="option option-a">
+      <div class="option-title">OPTION A - DYSTOPIA</div>
+
+      <div class="preview-section">
+        <div class="label">LOGO</div>
+        <div class="logo-en">COSLAB</div>
+        <div class="logo-kr">코스랩</div>
+      </div>
+
+      <div class="preview-section">
+        <div class="label">SECTION TITLE</div>
+        <div class="title-en">PROBLEMS</div>
+        <div class="title-kr">문제 목록</div>
+      </div>
+
+      <div class="preview-section">
+        <div class="label">BODY TEXT</div>
+        <div class="body-en">Execute user-provided C code inside a sandbox. Return program output and compile errors.</div>
+        <div class="body-kr" style="margin-top: 10px;">사용자가 작성한 C 코드를 샌드박스 안에서 실행합니다. 프로그램 출력과 컴파일 에러를 반환합니다.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status success title-en">ACCEPTED</div>
+        <div class="status error title-en">FAILED</div>
+        <div class="status warning title-en">RUNNING</div>
+      </div>
+
+      <div class="mock-ui">
+        <div class="mock-header">
+          <span class="logo-en" style="font-size: 18px;">COSLAB</span>
+          <div class="mock-nav">
+            <span class="active title-en">PROBLEMS</span>
+            <span class="title-en">MEMORY</span>
+            <span class="title-en">AI TUTOR</span>
+          </div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-panel">
+            <div class="mock-panel-title title-en">CODE</div>
+            <div class="body-en" style="font-family: monospace; font-size: 12px; color: #888;">int main() {<br>&nbsp;&nbsp;return 0;<br>}</div>
+          </div>
+          <div class="mock-panel">
+            <div class="mock-panel-title title-en">OUTPUT</div>
+            <div class="body-kr" style="color: #666;">실행 버튼을 눌러 코드를 실행하세요.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option B -->
+    <div class="option option-b">
+      <div class="option-title">OPTION B - RETRO FUTURE</div>
+
+      <div class="preview-section">
+        <div class="label">LOGO</div>
+        <div class="logo-en">COSLAB</div>
+        <div class="logo-kr">코스랩</div>
+      </div>
+
+      <div class="preview-section">
+        <div class="label">SECTION TITLE</div>
+        <div class="title-en">PROBLEMS</div>
+        <div class="title-kr">문제 목록</div>
+      </div>
+
+      <div class="preview-section">
+        <div class="label">BODY TEXT</div>
+        <div class="body-en">Execute user-provided C code inside a sandbox. Return program output and compile errors.</div>
+        <div class="body-kr" style="margin-top: 10px;">사용자가 작성한 C 코드를 샌드박스 안에서 실행합니다. 프로그램 출력과 컴파일 에러를 반환합니다.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status success title-en">ACCEPTED</div>
+        <div class="status error title-en">FAILED</div>
+        <div class="status warning title-en">RUNNING</div>
+      </div>
+
+      <div class="mock-ui">
+        <div class="mock-header">
+          <span class="logo-en" style="font-size: 20px;">COSLAB</span>
+          <div class="mock-nav">
+            <span class="active title-en">PROBLEMS</span>
+            <span class="title-en">MEMORY</span>
+            <span class="title-en">AI TUTOR</span>
+          </div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-panel">
+            <div class="mock-panel-title title-en">CODE</div>
+            <div class="body-en" style="font-family: monospace; font-size: 12px; color: #888;">int main() {<br>&nbsp;&nbsp;return 0;<br>}</div>
+          </div>
+          <div class="mock-panel">
+            <div class="mock-panel-title title-en">OUTPUT</div>
+            <div class="body-kr" style="color: #666;">실행 버튼을 눌러 코드를 실행하세요.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option C -->
+    <div class="option option-c">
+      <div class="option-title">OPTION C - TECH MINIMAL</div>
+
+      <div class="preview-section">
+        <div class="label">LOGO</div>
+        <div class="logo-en">COSLAB</div>
+        <div class="logo-kr">코스랩</div>
+      </div>
+
+      <div class="preview-section">
+        <div class="label">SECTION TITLE</div>
+        <div class="title-en">PROBLEMS</div>
+        <div class="title-kr">문제 목록</div>
+      </div>
+
+      <div class="preview-section">
+        <div class="label">BODY TEXT</div>
+        <div class="body-en">Execute user-provided C code inside a sandbox. Return program output and compile errors.</div>
+        <div class="body-kr" style="margin-top: 10px;">사용자가 작성한 C 코드를 샌드박스 안에서 실행합니다. 프로그램 출력과 컴파일 에러를 반환합니다.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status success title-en">ACCEPTED</div>
+        <div class="status error title-en">FAILED</div>
+        <div class="status warning title-en">RUNNING</div>
+      </div>
+
+      <div class="mock-ui">
+        <div class="mock-header">
+          <span class="logo-en" style="font-size: 16px;">COSLAB</span>
+          <div class="mock-nav">
+            <span class="active title-en">PROBLEMS</span>
+            <span class="title-en">MEMORY</span>
+            <span class="title-en">AI TUTOR</span>
+          </div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-panel">
+            <div class="mock-panel-title title-en">CODE</div>
+            <div class="body-en" style="font-family: monospace; font-size: 12px; color: #888;">int main() {<br>&nbsp;&nbsp;return 0;<br>}</div>
+          </div>
+          <div class="mock-panel">
+            <div class="mock-panel-title title-en">OUTPUT</div>
+            <div class="body-kr" style="color: #666;">실행 버튼을 눌러 코드를 실행하세요.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 60px; padding: 40px; border: 1px solid #252525;">
+    <div class="option-title" style="margin-bottom: 20px;">FONT FAMILIES USED</div>
+    <table style="width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 13px;">
+      <tr style="border-bottom: 1px solid #252525;">
+        <th style="text-align: left; padding: 15px 0; color: #666; font-weight: normal; letter-spacing: 0.1em;">OPTION</th>
+        <th style="text-align: left; padding: 15px 0; color: #666; font-weight: normal; letter-spacing: 0.1em;">LOGO/TITLE (EN)</th>
+        <th style="text-align: left; padding: 15px 0; color: #666; font-weight: normal; letter-spacing: 0.1em;">LOGO/TITLE (KR)</th>
+        <th style="text-align: left; padding: 15px 0; color: #666; font-weight: normal; letter-spacing: 0.1em;">BODY (EN)</th>
+        <th style="text-align: left; padding: 15px 0; color: #666; font-weight: normal; letter-spacing: 0.1em;">BODY (KR)</th>
+      </tr>
+      <tr style="border-bottom: 1px solid #1a1a1a;">
+        <td style="padding: 15px 0; color: #fff;">A - Dystopia</td>
+        <td style="padding: 15px 0; color: #aaa;">Orbit</td>
+        <td style="padding: 15px 0; color: #aaa;">Black Han Sans</td>
+        <td style="padding: 15px 0; color: #aaa;">Space Grotesk</td>
+        <td style="padding: 15px 0; color: #aaa;">Gothic A1</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #1a1a1a;">
+        <td style="padding: 15px 0; color: #fff;">B - Retro Future</td>
+        <td style="padding: 15px 0; color: #aaa;">Rajdhani</td>
+        <td style="padding: 15px 0; color: #aaa;">Do Hyeon</td>
+        <td style="padding: 15px 0; color: #aaa;">Inter</td>
+        <td style="padding: 15px 0; color: #aaa;">Noto Sans KR</td>
+      </tr>
+      <tr>
+        <td style="padding: 15px 0; color: #fff;">C - Tech Minimal</td>
+        <td style="padding: 15px 0; color: #aaa;">Orbitron</td>
+        <td style="padding: 15px 0; color: #aaa;">Gugi</td>
+        <td style="padding: 15px 0; color: #aaa;">IBM Plex Sans</td>
+        <td style="padding: 15px 0; color: #aaa;">IBM Plex Sans KR</td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

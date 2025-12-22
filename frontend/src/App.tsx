@@ -38,40 +38,28 @@ export default function App() {
   ];
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0a] text-white">
-      {/* Header */}
-      <header className="px-8 py-5 border-b border-[#252525] flex items-center">
-        <h1 className="font-logo text-xl tracking-[0.2em] font-bold">
+    <div className="h-screen flex flex-col bg-[#161618] text-white overflow-hidden">
+      {/* Header - Ultra Minimal */}
+      <header className="px-6 py-1.5 border-b border-[#1a1a1a] flex items-center">
+        <h1 className="font-logo text-sm tracking-[0.2em] font-bold">
           COSLAB
         </h1>
 
         {/* Tabs */}
-        <nav className="flex gap-8 ml-16">
+        <nav className="flex gap-6 ml-12">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`font-title text-sm tracking-[0.15em] py-2 transition-all duration-300 ${
-                activeTab === tab.id
-                  ? 'text-white border-b border-white'
-                  : 'text-neutral-500 hover:text-neutral-300'
-              }`}
+              className={`font-title text-xs tracking-[0.15em] py-1.5 ${activeTab === tab.id ? 'text-white' : 'text-neutral-600'}`}
             >
               {tab.label}
             </button>
           ))}
         </nav>
-
         <div className="flex-1" />
-
         <LoginButton />
-
-        <a
-          href="https://github.com/jammy0903/C-OSINE"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-title text-neutral-500 hover:text-white transition-colors duration-300 ml-8 text-sm tracking-[0.1em]"
-        >
+        <a href="https://github.com/jammy0903/C-OSINE" target="_blank" rel="noopener noreferrer" className="font-title text-neutral-600 hover:text-white ml-6 text-xs tracking-[0.1em]">
           GITHUB
         </a>
       </header>
@@ -85,15 +73,6 @@ export default function App() {
         {activeTab === 'chat' && <Chat />}
       </main>
 
-      {/* Footer */}
-      <footer className="px-8 py-3 border-t border-[#252525] flex justify-between items-center">
-        <span className="text-neutral-600 text-xs tracking-[0.15em]">
-          C & OS LEARNING PLATFORM
-        </span>
-        <span className="text-neutral-600 text-xs tracking-[0.1em]">
-          AI: GROQ
-        </span>
-      </footer>
     </div>
   );
 }

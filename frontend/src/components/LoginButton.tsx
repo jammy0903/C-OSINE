@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useStore } from '../stores/store';
 import { loginWithGoogle, logout } from '../services/firebase';
 
+// 프사 크기 - 여기서만 관리
+const AVATAR_SIZE = 16;
+
 export function LoginButton() {
   const { user } = useStore();
   const [error, setError] = useState<string | null>(null);
@@ -26,22 +29,22 @@ export function LoginButton() {
 
   if (user) {
     return (
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {user.photoURL && (
           <img
             src={user.photoURL}
             alt=""
-            className="w-6 h-6 rounded-full"
+            style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: '50%' }}
           />
         )}
-        <span className="font-body text-xs tracking-wide text-neutral-400">
-          {user.displayName || user.email}
+        <span className="text-[11px] text-neutral-400 max-w-[80px] truncate">
+          {user.displayName || user.email?.split('@')[0]}
         </span>
         <button
           onClick={handleLogout}
-          className="font-title text-xs tracking-[0.15em] text-neutral-500 hover:text-white transition-colors duration-300"
+          className="text-[10px] text-neutral-500 hover:text-white"
         >
-          LOGOUT
+          로그아웃
         </button>
       </div>
     );
@@ -51,13 +54,12 @@ export function LoginButton() {
     <div className="flex items-center gap-3">
       <button
         onClick={handleLogin}
-        className="font-title px-4 py-2 text-xs tracking-[0.15em] border border-[#252525] text-neutral-400 hover:border-white hover:text-white transition-all duration-300"
+        className="text-[11px] rounded-full text-white"
+        style={{ padding: '7px 14px', backgroundColor: '#3182f6' }}
       >
-        LOGIN
+        로그인
       </button>
-      {error && (
-        <span className="text-neutral-500 text-xs">{error}</span>
-      )}
+      {error && <span className="text-red-400 text-[10px]">{error}</span>}
     </div>
   );
 }

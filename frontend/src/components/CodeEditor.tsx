@@ -94,21 +94,21 @@ int main() {
   };
 
   return (
-    <div className="flex h-full bg-[#0a0a0a]">
+    <div className="flex h-full bg-[#161618] overflow-hidden">
       {/* Problem Panel */}
       {selectedProblem && (
-        <div className="w-1/2 flex flex-col border-r border-[#252525]">
+        <div className="w-1/2 flex flex-col border-r border-[#1a1a1a] min-w-0">
           {/* Problem Header */}
-          <div className="px-8 py-6 border-b border-[#252525] flex items-center justify-between">
-            <div>
-              <span className="font-title text-neutral-600 text-xs tracking-[0.2em]">NO. {selectedProblem.number}</span>
-              <h2 className="font-body text-xl font-light tracking-wide text-white mt-1">{selectedProblem.title}</h2>
+          <div className="px-4 py-3 border-b border-[#1a1a1a] flex items-center justify-between">
+            <div className="min-w-0">
+              <span className="text-neutral-600 text-[10px]">#{selectedProblem.number}</span>
+              <h2 className="text-base font-light text-white truncate">{selectedProblem.title}</h2>
             </div>
             <button
               onClick={handleClose}
-              className="font-title text-neutral-500 hover:text-white transition-colors duration-300 text-xs tracking-[0.15em]"
+              className="text-[10px] text-neutral-500 hover:text-white ml-2 shrink-0"
             >
-              CLOSE
+              닫기
             </button>
           </div>
 
@@ -164,53 +164,55 @@ int main() {
         </div>
 
         {/* Toolbar */}
-        <div className="px-6 py-4 bg-[#111] border-t border-[#252525] shrink-0">
+        <div className="px-4 py-3 bg-[#111] border-t border-[#1a1a1a] shrink-0">
           {/* Stdin */}
-          <div className="mb-4">
-            <label className="font-title text-neutral-600 text-xs tracking-[0.15em] mb-2 block">STDIN</label>
+          <div className="mb-3">
+            <label className="text-neutral-500 text-[10px] mb-1 block">입력 (stdin)</label>
             <textarea
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
-              placeholder="Input data for scanf, etc."
-              className="w-full h-14 bg-transparent border-b border-[#252525] font-mono text-sm p-0 pt-2 resize-none focus:border-white transition-colors placeholder-neutral-700"
-              style={{ color: '#ffffff' }}
+              placeholder="scanf 입력값..."
+              className="w-full h-10 bg-[#1a1a1a] rounded-lg font-mono text-xs p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#3182f6] placeholder-neutral-600 text-white"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={handleRun}
               disabled={isRunning || isJudging}
-              className="font-title px-6 py-2 text-xs tracking-[0.15em] border border-white bg-white text-black hover:bg-transparent hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black transition-all duration-300"
+              className="text-[11px] rounded-full text-white disabled:opacity-40"
+              style={{ padding: '8px 18px', backgroundColor: '#3182f6' }}
             >
-              {isRunning ? 'RUNNING...' : 'RUN'}
+              {isRunning ? '실행중...' : '실행'}
             </button>
 
             {selectedProblem && (
               <button
                 onClick={handleJudge}
                 disabled={isRunning || isJudging}
-                className="font-title px-6 py-2 text-xs tracking-[0.15em] border border-[#252525] text-neutral-400 hover:border-white hover:text-white disabled:opacity-30 transition-all duration-300"
+                className="text-[11px] rounded-full text-white disabled:opacity-40"
+                style={{ padding: '8px 18px', backgroundColor: '#20c997' }}
               >
-                {isJudging ? 'JUDGING...' : 'JUDGE'}
+                {isJudging ? '채점중...' : '채점'}
               </button>
             )}
 
             <button
               onClick={handleReset}
-              className="font-title px-4 py-2 text-xs tracking-[0.15em] text-neutral-500 hover:text-white transition-colors duration-300"
+              className="text-[11px] rounded-full hover:text-white"
+              style={{ padding: '8px 16px', backgroundColor: '#252530', color: '#999' }}
             >
-              RESET
+              초기화
             </button>
 
             <div className="flex-1" />
 
             <button
               onClick={() => setIsTerminalOpen(!isTerminalOpen)}
-              className="font-title text-xs tracking-[0.15em] text-neutral-500 hover:text-white transition-colors duration-300"
+              className="text-[10px] text-neutral-500 hover:text-white"
             >
-              {isTerminalOpen ? 'HIDE OUTPUT' : 'SHOW OUTPUT'}
+              {isTerminalOpen ? '출력 숨기기' : '출력 보기'}
             </button>
           </div>
         </div>

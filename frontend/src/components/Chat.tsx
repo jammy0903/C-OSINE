@@ -56,7 +56,7 @@ export function Chat() {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a]">
+    <div className="flex flex-col h-full bg-[#161618]">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-8 py-8">
         {messages.length === 0 ? (
