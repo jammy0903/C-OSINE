@@ -22,7 +22,7 @@ export interface MemBlock {
 }
 
 // 탭 타입
-export type TabType = 'problems' | 'chat' | 'code' | 'memory';
+export type TabType = 'problems' | 'chat' | 'memory';
 
 // 문제 타입
 export interface Problem {

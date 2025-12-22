@@ -7,11 +7,10 @@ import { ProblemList } from './components/ProblemList';
 import type { TabType } from './types';
 
 export default function App() {
-  const { activeTab, setActiveTab } = useStore();
+  const { activeTab, setActiveTab, selectedProblem } = useStore();
 
   const tabs: { id: TabType; label: string; icon: string }[] = [
     { id: 'problems', label: '문제', icon: '📋' },
-    { id: 'code', label: '코드', icon: '💻' },
     { id: 'memory', label: '메모리', icon: '🧠' },
     { id: 'chat', label: 'AI 튜터', icon: '💬' },
   ];
@@ -63,8 +62,9 @@ export default function App() {
 
       {/* 메인 컨텐츠 */}
       <main className="flex-1 overflow-hidden">
-        {activeTab === 'problems' && <ProblemList />}
-        {activeTab === 'code' && <CodeEditor />}
+        {activeTab === 'problems' && (
+          selectedProblem ? <CodeEditor /> : <ProblemList />
+        )}
         {activeTab === 'memory' && <MemoryViz />}
         {activeTab === 'chat' && <Chat />}
       </main>

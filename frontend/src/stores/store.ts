@@ -48,7 +48,7 @@ export const useStore = create<Store>((set) => ({
 
   // === 선택된 문제 ===
   selectedProblem: null,
-  selectProblem: (problem) => set({ selectedProblem: problem, activeTab: 'code' }),
+  selectProblem: (problem) => set({ selectedProblem: problem }),
   clearProblem: () => set({ selectedProblem: null }),
 
   // === 채팅 ===
