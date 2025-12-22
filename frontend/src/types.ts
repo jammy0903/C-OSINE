@@ -22,4 +22,18 @@ export interface MemBlock {
 }
 
 // 탭 타입
-export type TabType = 'chat' | 'code' | 'memory';
+export type TabType = 'problems' | 'chat' | 'code' | 'memory';
+
+// 문제 타입
+export interface Problem {
+  id: string;
+  number: number;
+  title: string;
+  description?: string;
+  difficulty: string;
+  tags: string[];
+  acceptedCount: number;
+  submissionCount: number;
+  userStatus?: 'solved' | 'attempted';
+  testCases?: { input: string; output: string }[];
+}

@@ -1,209 +1,373 @@
 import { useState } from 'react';
-import { useStore } from '../stores/store';
+import Xarrow, { Xwrapper } from 'react-xarrows';
+import { traceCode, type Step, type MemoryBlock } from '../services/tracer';
+
+const DEFAULT_CODE = `#include <stdio.h>
+
+int main() {
+    int x = 5;
+    int y = 10;
+    int *p = &x;
+    *p = 20;
+    printf("%d\\n", x);
+    return 0;
+}`;
 
 export function MemoryViz() {
-  const { memBlocks, malloc, free, resetMemory } = useStore();
-  const [name, setName] = useState('');
-  const [size, setSize] = useState(64);
+  const [code, setCode] = useState(DEFAULT_CODE);
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [sourceLines, setSourceLines] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleMalloc = () => {
+  const handleTrace = async () => {
+    setIsLoading(true);
     setError('');
+    setSteps([]);
+    setCurrentStep(0);
 
-    // 유효성 검사
-    if (!name.trim()) {
-      setError('변수명을 입력하세요');
-      return;
-    }
-    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
-      setError('유효한 C 변수명을 입력하세요');
-      return;
-    }
-    if (memBlocks.some((b) => b.name === name)) {
-      setError('이미 존재하는 변수명입니다');
-      return;
-    }
-    if (size < 1 || size > 1024) {
-      setError('크기는 1~1024 사이여야 합니다');
-      return;
+    const result = await traceCode(code);
+
+    if (result.success) {
+      setSteps(result.steps);
+      setSourceLines(result.source_lines);
+    } else {
+      setError(result.message || '실행 오류');
     }
 
-    malloc(name.trim(), size);
-    setName('');
+    setIsLoading(false);
   };
 
-  const totalAllocated = memBlocks.reduce((sum, b) => sum + b.size, 0);
+  const step = steps[currentStep];
 
   return (
     <div className="flex h-full">
-      {/* 왼쪽: 컨트롤 패널 */}
-      <div className="w-72 p-4 border-r border-gray-700 flex flex-col">
-        <h2 className="text-lg font-bold mb-4">🧠 메모리 시뮬레이터</h2>
+      {/* 왼쪽: 코드 에디터 */}
+      <div className="w-1/3 p-4 border-r border-gray-700 flex flex-col">
+        <h2 className="text-lg font-bold mb-2">📝 C 코드</h2>
 
-        {/* malloc 폼 */}
-        <div className="space-y-3 mb-4">
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">변수명</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleMalloc()}
-              placeholder="ptr1"
-              className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
-            />
+        <textarea
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          className="flex-1 bg-gray-800 text-green-400 font-mono text-sm p-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="C 코드를 입력하세요..."
+        />
+
+        <button
+          onClick={handleTrace}
+          disabled={isLoading}
+          className="mt-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-medium transition-colors"
+        >
+          {isLoading ? '분석 중...' : '▶ 실행 & 추적'}
+        </button>
+
+        {error && (
+          <p className="mt-2 text-red-400 text-sm">{error}</p>
+        )}
+
+        {/* 스텝 컨트롤 */}
+        {steps.length > 0 && (
+          <div className="mt-4 flex items-center gap-2">
+            <button
+              onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+              disabled={currentStep === 0}
+              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded"
+            >
+              ◀ Prev
+            </button>
+            <span className="text-gray-400">
+              Step {currentStep + 1} / {steps.length}
+            </span>
+            <button
+              onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
+              disabled={currentStep === steps.length - 1}
+              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded"
+            >
+              Next ▶
+            </button>
           </div>
-
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">
-              크기 (bytes): {size}
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="256"
-              value={size}
-              onChange={(e) => setSize(Number(e.target.value))}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>1</span>
-              <span>256</span>
-            </div>
-          </div>
-
-          {error && (
-            <p className="text-red-400 text-sm">{error}</p>
-          )}
-
-          <button
-            onClick={handleMalloc}
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors"
-          >
-            malloc({size})
-          </button>
-
-          <button
-            onClick={resetMemory}
-            className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          >
-            전체 초기화
-          </button>
-        </div>
-
-        {/* 할당된 블록 목록 */}
-        <div className="flex-1 overflow-y-auto">
-          <h3 className="text-sm text-gray-400 mb-2">
-            할당된 블록 ({memBlocks.length}개, {totalAllocated} bytes)
-          </h3>
-
-          {memBlocks.length === 0 ? (
-            <p className="text-gray-500 text-sm">할당된 메모리가 없습니다</p>
-          ) : (
-            <div className="space-y-2">
-              {memBlocks.map((block) => (
-                <div
-                  key={block.id}
-                  className="flex items-center justify-between bg-gray-800 rounded p-2"
-                >
-                  <div>
-                    <span className="font-mono text-purple-400">{block.name}</span>
-                    <span className="text-gray-500 text-sm ml-2">
-                      {block.size}B
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => free(block.name)}
-                    className="text-red-400 hover:text-red-300 text-sm px-2 py-1 hover:bg-red-900/30 rounded transition-colors"
-                  >
-                    free()
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 코드 미리보기 */}
-        <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-          <h4 className="text-xs text-gray-500 mb-1">C 코드</h4>
-          <pre className="text-xs font-mono text-green-400">
-            {memBlocks.length > 0 ? (
-              memBlocks.map((b) => `${b.name} = malloc(${b.size});`).join('\n')
-            ) : (
-              '// malloc() 해보세요!'
-            )}
-          </pre>
-        </div>
+        )}
       </div>
 
-      {/* 오른쪽: 시각화 */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        <h3 className="text-lg font-bold mb-4">📊 Heap Memory</h3>
+      {/* 가운데: 소스 코드 + 설명 */}
+      <div className="w-1/3 p-4 border-r border-gray-700 flex flex-col">
+        <h2 className="text-lg font-bold mb-2">📄 실행 위치</h2>
 
-        {memBlocks.length === 0 ? (
+        {/* 소스 코드 - 개선된 줄 번호 */}
+        <div className="bg-gray-800 rounded-lg overflow-hidden flex-1 max-h-[40%] overflow-auto">
+          <table className="w-full font-mono text-sm">
+            <tbody>
+              {(sourceLines || []).map((line, idx) => {
+                const isCurrentLine = step && step.line === idx + 1;
+                return (
+                  <tr
+                    key={idx}
+                    className={isCurrentLine ? 'bg-yellow-500/20' : ''}
+                  >
+                    {/* 줄 번호 - 배경색 + 구분선 */}
+                    <td className="w-10 text-right pr-2 pl-2 py-0.5 bg-gray-700/50 text-gray-500 select-none border-r border-gray-600">
+                      {idx + 1}
+                    </td>
+                    {/* 코드 */}
+                    <td className={`pl-3 pr-2 py-0.5 whitespace-pre ${isCurrentLine ? 'text-yellow-300' : 'text-gray-300'}`}>
+                      {line || ' '}
+                    </td>
+                    {/* 현재 실행 표시 */}
+                    <td className="w-6 text-center">
+                      {isCurrentLine && <span className="text-yellow-400">◀</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 설명 박스 */}
+        {step && step.explanation && (
+          <div className="mt-3 bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 flex-1 overflow-auto">
+            <h3 className="text-blue-400 font-bold mb-2">💡 이 단계에서 일어나는 일</h3>
+            <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+              {step.explanation}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      {/* 오른쪽: 메모리 시각화 */}
+      <div className="w-1/3 p-4 overflow-auto">
+        <h2 className="text-lg font-bold mb-2">🧠 메모리</h2>
+
+        {!step ? (
           <div className="text-center text-gray-500 mt-16">
             <p className="text-4xl mb-4">📦</p>
-            <p>왼쪽에서 malloc()을 실행하면</p>
-            <p>여기에 메모리 블록이 표시됩니다.</p>
+            <p>코드를 실행하면</p>
+            <p>메모리 상태가 표시됩니다</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {memBlocks.map((block) => (
-              <div
-                key={block.id}
-                className="memory-block memory-block-enter"
-              >
-                {/* 메모리 블록 */}
-                <div
-                  className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-lg p-4 shadow-lg"
-                  style={{
-                    width: `${Math.min(100, Math.max(30, block.size / 2.5))}%`,
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-mono font-bold text-lg">{block.name}</span>
-                    <span className="text-purple-200 text-sm">
-                      {block.size} bytes
-                    </span>
-                  </div>
-                  <div className="text-purple-200 text-sm font-mono">
-                    주소: 0x{block.address.toString(16).toUpperCase()}
-                  </div>
-                </div>
-
-                {/* 화살표 (포인터 표시) */}
-                <div className="ml-4 mt-1 text-gray-500 text-sm">
-                  ↳ {block.name} = (void*)0x{block.address.toString(16)}
-                </div>
-              </div>
-            ))}
-
-            {/* 메모리 레이아웃 요약 */}
-            <div className="mt-8 p-4 bg-gray-800 rounded-lg">
-              <h4 className="text-sm text-gray-400 mb-3">메모리 레이아웃</h4>
-              <div className="flex gap-1 h-8 rounded overflow-hidden">
-                {memBlocks.map((block) => (
-                  <div
-                    key={block.id}
-                    className="bg-purple-600 flex items-center justify-center text-xs"
-                    style={{
-                      width: `${(block.size / totalAllocated) * 100}%`,
-                      minWidth: '20px',
-                    }}
-                    title={`${block.name}: ${block.size}B`}
-                  >
-                    {block.name}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2 text-xs text-gray-500">
-                총 {totalAllocated} bytes 할당됨
-              </div>
-            </div>
-          </div>
+          <Xwrapper>
+            <MemoryGrid stack={step.stack || []} heap={step.heap || []} />
+          </Xwrapper>
         )}
       </div>
     </div>
   );
+}
+
+// 메모리 격자 시각화 컴포넌트
+function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[] }) {
+  const allBlocks = [...stack, ...heap];
+
+  // 포인터 연결 정보 수집
+  const pointerConnections: { from: string; to: string }[] = [];
+  allBlocks.forEach(block => {
+    if (block.points_to) {
+      const target = allBlocks.find(b => b.address === block.points_to);
+      if (target) {
+        pointerConnections.push({
+          from: `block-${block.address}`,
+          to: `block-${target.address}`
+        });
+      }
+    }
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* 전체 메모리 컨테이너 */}
+      <div className="bg-gray-800 rounded-lg p-4 border-2 border-gray-600">
+        <div className="text-center text-gray-400 text-xs mb-3 uppercase tracking-wider">
+          Virtual Memory
+        </div>
+
+        {/* STACK 영역 */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-purple-400 font-bold text-sm">📚 STACK</span>
+            <span className="text-gray-500 text-xs">(높은 주소 → 낮은 주소)</span>
+          </div>
+
+          {stack.length === 0 ? (
+            <div className="bg-purple-900/20 border border-purple-500/30 rounded p-3 text-center text-gray-500 text-sm">
+              비어있음
+            </div>
+          ) : (
+            <div className="bg-purple-900/20 border border-purple-500/30 rounded p-3">
+              <div className="grid grid-cols-4 gap-2">
+                {stack.map((block) => (
+                  <MemoryCell
+                    key={block.address}
+                    block={block}
+                    color="purple"
+                    allBlocks={allBlocks}
+                  />
+                ))}
+                {/* 빈 셀 채우기 (최소 4칸) */}
+                {stack.length < 4 && Array.from({ length: 4 - stack.length }).map((_, i) => (
+                  <EmptyCell key={`empty-stack-${i}`} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 여유 공간 표시 */}
+        <div className="flex items-center justify-center my-3">
+          <div className="flex-1 border-t border-dashed border-gray-600"></div>
+          <span className="px-3 text-gray-500 text-xs">↕ 여유 공간</span>
+          <div className="flex-1 border-t border-dashed border-gray-600"></div>
+        </div>
+
+        {/* HEAP 영역 */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-green-400 font-bold text-sm">🗄️ HEAP</span>
+            <span className="text-gray-500 text-xs">(낮은 주소 → 높은 주소)</span>
+          </div>
+
+          {heap.length === 0 ? (
+            <div className="bg-green-900/20 border border-green-500/30 rounded p-3 text-center text-gray-500 text-sm">
+              비어있음 (malloc 전)
+            </div>
+          ) : (
+            <div className="bg-green-900/20 border border-green-500/30 rounded p-3">
+              <div className="grid grid-cols-4 gap-2">
+                {heap.map((block) => (
+                  <MemoryCell
+                    key={block.address}
+                    block={block}
+                    color="green"
+                    allBlocks={allBlocks}
+                  />
+                ))}
+                {heap.length < 4 && Array.from({ length: 4 - heap.length }).map((_, i) => (
+                  <EmptyCell key={`empty-heap-${i}`} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 포인터 화살표 */}
+      {pointerConnections.map((conn, idx) => (
+        <Xarrow
+          key={idx}
+          start={conn.from}
+          end={conn.to}
+          color="#f97316"
+          strokeWidth={2}
+          headSize={4}
+          curveness={0.5}
+          dashness={false}
+          path="smooth"
+        />
+      ))}
+
+      {/* 범례 */}
+      <div className="bg-gray-800 rounded-lg p-3 text-xs">
+        <div className="text-gray-400 mb-2 font-bold">범례</div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-purple-500/50 border border-purple-500 rounded"></div>
+            <span className="text-gray-300">스택 변수</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-500/50 border border-green-500 rounded"></div>
+            <span className="text-gray-300">힙 메모리</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-orange-500 rounded"></div>
+            <span className="text-gray-300">포인터</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-0 border-t-2 border-orange-500"></div>
+            <span className="text-gray-300">가리킴</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 개별 메모리 셀 컴포넌트
+function MemoryCell({
+  block,
+  color,
+  allBlocks
+}: {
+  block: MemoryBlock;
+  color: 'purple' | 'green';
+  allBlocks: MemoryBlock[];
+}) {
+  const isPointer = block.type.includes('*');
+
+  // 포인터가 가리키는 대상 찾기
+  const pointsToBlock = block.points_to
+    ? allBlocks.find(b => b.address === block.points_to)
+    : null;
+
+  const bgColor = color === 'purple' ? 'bg-purple-600/30' : 'bg-green-600/30';
+  const borderColor = isPointer
+    ? 'border-orange-500 border-2'
+    : color === 'purple'
+      ? 'border-purple-500'
+      : 'border-green-500';
+
+  return (
+    <div
+      id={`block-${block.address}`}
+      className={`${bgColor} ${borderColor} border rounded-lg p-2 text-center transition-all hover:scale-105`}
+    >
+      {/* 변수명 */}
+      <div className="font-mono font-bold text-blue-300 text-sm truncate" title={block.name}>
+        {block.name}
+      </div>
+
+      {/* 값 */}
+      <div className="text-lg font-bold text-yellow-400 my-1">
+        {isPointer && pointsToBlock ? (
+          <span className="text-orange-400 text-sm">
+            →{pointsToBlock.name}
+          </span>
+        ) : isPointer && block.points_to ? (
+          <span className="text-orange-400 text-xs font-mono">
+            {block.points_to}
+          </span>
+        ) : (
+          block.value
+        )}
+      </div>
+
+      {/* 주소 */}
+      <div className="text-xs text-gray-500 font-mono truncate" title={block.address}>
+        {formatAddress(block.address)}
+      </div>
+
+      {/* 타입 표시 */}
+      <div className="text-xs text-gray-400 mt-1">
+        {block.type}
+      </div>
+    </div>
+  );
+}
+
+// 빈 셀 컴포넌트
+function EmptyCell() {
+  return (
+    <div className="bg-gray-700/20 border border-gray-600/30 border-dashed rounded-lg p-2 text-center">
+      <div className="text-gray-600 text-xs">-</div>
+    </div>
+  );
+}
+
+// 주소 포맷팅 (긴 주소 축약)
+function formatAddress(addr: string): string {
+  if (!addr) return '';
+  // 0x7fff... 형식이면 마지막 4자리만 표시
+  if (addr.length > 8) {
+    return '...' + addr.slice(-4);
+  }
+  return addr;
 }

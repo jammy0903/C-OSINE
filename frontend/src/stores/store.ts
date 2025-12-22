@@ -1,10 +1,15 @@
 import { create } from 'zustand';
-import type { Message, RunResult, MemBlock, TabType } from '../types';
+import type { Message, RunResult, MemBlock, TabType, Problem } from '../types';
 
 interface Store {
   // === 탭 ===
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
+
+  // === 선택된 문제 ===
+  selectedProblem: Problem | null;
+  selectProblem: (problem: Problem) => void;
+  clearProblem: () => void;
 
   // === 채팅 ===
   messages: Message[];
@@ -38,8 +43,13 @@ int main() {
 
 export const useStore = create<Store>((set) => ({
   // === 탭 ===
-  activeTab: 'chat',
+  activeTab: 'problems',
   setActiveTab: (tab) => set({ activeTab: tab }),
+
+  // === 선택된 문제 ===
+  selectedProblem: null,
+  selectProblem: (problem) => set({ selectedProblem: problem, activeTab: 'code' }),
+  clearProblem: () => set({ selectedProblem: null }),
 
   // === 채팅 ===
   messages: [],

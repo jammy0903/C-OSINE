@@ -2,15 +2,18 @@ import { useStore } from './stores/store';
 import { Chat } from './components/Chat';
 import { CodeEditor } from './components/CodeEditor';
 import { MemoryViz } from './components/MemoryViz';
+import { LoginButton } from './components/LoginButton';
+import { ProblemList } from './components/ProblemList';
 import type { TabType } from './types';
 
 export default function App() {
   const { activeTab, setActiveTab } = useStore();
 
   const tabs: { id: TabType; label: string; icon: string }[] = [
-    { id: 'chat', label: 'AI 튜터', icon: '💬' },
-    { id: 'code', label: '코드 실행', icon: '💻' },
+    { id: 'problems', label: '문제', icon: '📋' },
+    { id: 'code', label: '코드', icon: '💻' },
     { id: 'memory', label: '메모리', icon: '🧠' },
+    { id: 'chat', label: 'AI 튜터', icon: '💬' },
   ];
 
   return (
@@ -44,12 +47,15 @@ export default function App() {
 
         <div className="flex-1" />
 
+        {/* 로그인 버튼 */}
+        <LoginButton />
+
         {/* GitHub 링크 */}
         <a
           href="https://github.com/jammy0903/C-OSINE"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-gray-400 hover:text-white transition-colors ml-4"
         >
           GitHub
         </a>
@@ -57,9 +63,10 @@ export default function App() {
 
       {/* 메인 컨텐츠 */}
       <main className="flex-1 overflow-hidden">
-        {activeTab === 'chat' && <Chat />}
+        {activeTab === 'problems' && <ProblemList />}
         {activeTab === 'code' && <CodeEditor />}
         {activeTab === 'memory' && <MemoryViz />}
+        {activeTab === 'chat' && <Chat />}
       </main>
 
       {/* 푸터 */}
