@@ -9,11 +9,11 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 export function CodeEditor() {
   const { code, setCode, result, setResult, isRunning, setRunning, selectedProblem, clearProblem, setActiveTab, user, setSolvedStatus, solvedProblems, attemptedProblems } = useStore();
 
-  // 닫기 버튼: 문제 클리어 + 문제 목록으로 이동
   const handleClose = () => {
     clearProblem();
     setActiveTab('problems');
   };
+
   const [stdin, setStdin] = useState('');
   const [isTerminalOpen, setIsTerminalOpen] = useState(true);
   const [isJudging, setIsJudging] = useState(false);
@@ -27,14 +27,13 @@ export function CodeEditor() {
   const handleRun = async () => {
     setRunning(true);
     setResult(null);
-
     try {
       const res = await runCode(code, stdin);
       setResult(res);
     } catch (error) {
       setResult({
         success: false,
-        output: `오류: ${error instanceof Error ? error.message : 'Unknown'}`,
+        output: `Error: ${error instanceof Error ? error.message : 'Unknown'}`,
       });
     } finally {
       setRunning(false);
@@ -52,13 +51,9 @@ int main() {
     setJudgeResults(null);
   };
 
-  // 채점 기능
   const handleJudge = async () => {
     if (!selectedProblem?.testCases || selectedProblem.testCases.length === 0) {
-      setResult({
-        success: false,
-        output: '테스트 케이스가 없습니다.',
-      });
+      setResult({ success: false, output: 'No test cases available.' });
       return;
     }
 
@@ -70,7 +65,6 @@ int main() {
       const results = await runTestCases(code, selectedProblem.testCases);
       setJudgeResults(results);
 
-      // 로그인된 사용자면 제출 기록 저장
       if (user) {
         const verdict = results.allPassed ? 'accepted' : 'wrong_answer';
         await createSubmission({
@@ -80,22 +74,19 @@ int main() {
           verdict
         });
 
-        // solved/attempted 상태 업데이트
         if (results.allPassed && !solvedProblems.includes(selectedProblem.id)) {
-          // 정답이면 solved에 추가, attempted에서 제거
           setSolvedStatus(
             [...solvedProblems, selectedProblem.id],
             attemptedProblems.filter(id => id !== selectedProblem.id)
           );
         } else if (!results.allPassed && !solvedProblems.includes(selectedProblem.id) && !attemptedProblems.includes(selectedProblem.id)) {
-          // 오답이고 아직 시도 안 했으면 attempted에 추가
           setSolvedStatus(solvedProblems, [...attemptedProblems, selectedProblem.id]);
         }
       }
     } catch (error) {
       setResult({
         success: false,
-        output: `채점 오류: ${error instanceof Error ? error.message : 'Unknown'}`,
+        output: `Judge error: ${error instanceof Error ? error.message : 'Unknown'}`,
       });
     } finally {
       setIsJudging(false);
@@ -103,45 +94,45 @@ int main() {
   };
 
   return (
-    <div className="flex h-full">
-      {/* 문제 설명 패널 (선택된 문제가 있을 때만 표시) */}
+    <div className="flex h-full bg-[#0a0a0a]">
+      {/* Problem Panel */}
       {selectedProblem && (
-        <div className="w-1/2 flex flex-col border-r border-gray-700 bg-[#0a0a0a]">
-          {/* 문제 헤더 */}
-          <div className="p-4 bg-[#1a1a1a] border-b border-gray-700 flex items-center justify-between">
+        <div className="w-1/2 flex flex-col border-r border-[#252525]">
+          {/* Problem Header */}
+          <div className="px-8 py-6 border-b border-[#252525] flex items-center justify-between">
             <div>
-              <span className="text-gray-500 text-sm">#{selectedProblem.number}</span>
-              <h2 className="text-xl font-bold text-white">{selectedProblem.title}</h2>
+              <span className="font-title text-neutral-600 text-xs tracking-[0.2em]">NO. {selectedProblem.number}</span>
+              <h2 className="font-body text-xl font-light tracking-wide text-white mt-1">{selectedProblem.title}</h2>
             </div>
             <button
               onClick={handleClose}
-              className="px-3 py-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              className="font-title text-neutral-500 hover:text-white transition-colors duration-300 text-xs tracking-[0.15em]"
             >
-              ✕ 닫기
+              CLOSE
             </button>
           </div>
 
-          {/* 문제 설명 */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <pre className="whitespace-pre-wrap text-gray-300 font-sans leading-relaxed">
+          {/* Problem Description */}
+          <div className="flex-1 overflow-y-auto px-8 py-6">
+            <pre className="font-body whitespace-pre-wrap text-neutral-400 leading-relaxed text-sm">
               {selectedProblem.description}
             </pre>
 
-            {/* 테스트 케이스 */}
+            {/* Test Cases */}
             {selectedProblem.testCases && selectedProblem.testCases.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-white mb-3">테스트 케이스</h3>
+              <div className="mt-8">
+                <h3 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-4 uppercase">TEST CASES</h3>
                 {selectedProblem.testCases.map((tc, i) => (
-                  <div key={i} className="mb-4 bg-[#1a1a1a] rounded-lg p-3 border border-gray-700">
-                    <div className="mb-2">
-                      <span className="text-gray-500 text-sm">입력</span>
-                      <pre className="mt-1 p-2 bg-[#0a0a0a] rounded text-green-400 font-mono text-sm">
-                        {tc.input || '(없음)'}
+                  <div key={i} className="mb-4 border border-[#252525] p-4">
+                    <div className="mb-3">
+                      <span className="font-title text-neutral-600 text-xs tracking-wide">INPUT</span>
+                      <pre className="mt-2 p-3 bg-[#111] text-neutral-300 font-mono text-sm">
+                        {tc.input || '(none)'}
                       </pre>
                     </div>
                     <div>
-                      <span className="text-gray-500 text-sm">출력</span>
-                      <pre className="mt-1 p-2 bg-[#0a0a0a] rounded text-blue-400 font-mono text-sm">
+                      <span className="font-title text-neutral-600 text-xs tracking-wide">OUTPUT</span>
+                      <pre className="mt-2 p-3 bg-[#111] text-neutral-300 font-mono text-sm">
                         {tc.output}
                       </pre>
                     </div>
@@ -153,10 +144,10 @@ int main() {
         </div>
       )}
 
-      {/* 코드 에디터 영역 */}
+      {/* Code Editor Area */}
       <div className={`flex flex-col ${selectedProblem ? 'w-1/2' : 'w-full'}`}>
-        {/* 에디터 - 터미널이 열려있으면 공간 나눔 */}
-        <div className={`${isTerminalOpen ? 'h-1/2' : 'flex-1'} overflow-auto border-b border-gray-700`}>
+        {/* Editor */}
+        <div className={`${isTerminalOpen ? 'h-1/2' : 'flex-1'} overflow-auto border-b border-[#252525]`}>
           <CodeMirror
             value={code}
             onChange={setCode}
@@ -172,189 +163,136 @@ int main() {
           />
         </div>
 
-        {/* stdin 입력 + 툴바 */}
-        <div className="p-3 bg-gray-800 border-t border-gray-700 shrink-0">
-          {/* stdin 입력 영역 */}
-          <div className="mb-3">
-            <label className="text-gray-400 text-sm flex items-center gap-2 mb-1">
-              📥 입력 (stdin)
-              <span className="text-gray-500 text-xs">- scanf 등에서 읽을 데이터</span>
-            </label>
+        {/* Toolbar */}
+        <div className="px-6 py-4 bg-[#111] border-t border-[#252525] shrink-0">
+          {/* Stdin */}
+          <div className="mb-4">
+            <label className="font-title text-neutral-600 text-xs tracking-[0.15em] mb-2 block">STDIN</label>
             <textarea
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
-              placeholder="예: 3 5&#10;프로그램 실행 시 입력으로 사용됩니다"
-              className="w-full h-16 bg-gray-900 font-mono text-sm p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
-              style={{ color: '#4ade80', caretColor: '#4ade80' }}
+              placeholder="Input data for scanf, etc."
+              className="w-full h-14 bg-transparent border-b border-[#252525] font-mono text-sm p-0 pt-2 resize-none focus:border-white transition-colors placeholder-neutral-700"
+              style={{ color: '#ffffff' }}
             />
           </div>
 
-          {/* 버튼들 */}
-          <div className="flex items-center gap-3">
+          {/* Buttons */}
+          <div className="flex items-center gap-4">
             <button
               onClick={handleRun}
               disabled={isRunning || isJudging}
-              className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2"
+              className="font-title px-6 py-2 text-xs tracking-[0.15em] border border-white bg-white text-black hover:bg-transparent hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black transition-all duration-300"
             >
-              {isRunning ? (
-                <>
-                  <Spinner /> 실행 중...
-                </>
-              ) : (
-                <>▶ 실행</>
-              )}
+              {isRunning ? 'RUNNING...' : 'RUN'}
             </button>
 
-            {/* 채점 버튼 (문제 선택 시만 표시) */}
             {selectedProblem && (
               <button
                 onClick={handleJudge}
                 disabled={isRunning || isJudging}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="font-title px-6 py-2 text-xs tracking-[0.15em] border border-[#252525] text-neutral-400 hover:border-white hover:text-white disabled:opacity-30 transition-all duration-300"
               >
-                {isJudging ? (
-                  <>
-                    <Spinner /> 채점 중...
-                  </>
-                ) : (
-                  <>✓ 채점</>
-                )}
+                {isJudging ? 'JUDGING...' : 'JUDGE'}
               </button>
             )}
 
             <button
               onClick={handleReset}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+              className="font-title px-4 py-2 text-xs tracking-[0.15em] text-neutral-500 hover:text-white transition-colors duration-300"
             >
-              초기화
+              RESET
             </button>
 
             <div className="flex-1" />
 
-            {/* 터미널 접기/펼치기 버튼 */}
             <button
               onClick={() => setIsTerminalOpen(!isTerminalOpen)}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-1 text-sm"
-              title={isTerminalOpen ? '터미널 닫기' : '터미널 열기'}
+              className="font-title text-xs tracking-[0.15em] text-neutral-500 hover:text-white transition-colors duration-300"
             >
-              {isTerminalOpen ? '▼ 터미널' : '▲ 터미널'}
+              {isTerminalOpen ? 'HIDE OUTPUT' : 'SHOW OUTPUT'}
             </button>
-
-            <span className="text-gray-500 text-sm">
-              자체 백엔드 (무제한)
-            </span>
           </div>
         </div>
 
-        {/* 결과 - 접기/펼치기 가능 */}
+        {/* Output */}
         {isTerminalOpen && (
-          <div className="h-1/2 overflow-y-auto bg-gray-900 p-4">
-          {/* 채점 결과 */}
-          {judgeResults && (
-            <div className="mb-4">
-              <h3 className="text-sm text-gray-400 mb-2 flex items-center gap-2">
-                📝 채점 결과
-                <span className={judgeResults.allPassed ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>
-                  {judgeResults.allPassed ? '🎉 정답!' : '❌ 오답'}
-                </span>
-                <span className="text-gray-500">
-                  ({judgeResults.passedCount}/{judgeResults.totalCount} 통과)
-                </span>
-              </h3>
-
-              <div className="space-y-2">
-                {judgeResults.results.map((tc, i) => (
-                  <div
-                    key={i}
-                    className={`p-3 rounded-lg border ${
-                      tc.passed
-                        ? 'bg-green-900/20 border-green-700'
-                        : 'bg-red-900/20 border-red-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">
-                        테스트 {i + 1}: {tc.passed ? '✓ 통과' : '✗ 실패'}
-                      </span>
-                      {tc.time && <span className="text-gray-500 text-xs">{tc.time}</span>}
-                    </div>
-
-                    {!tc.passed && (
-                      <div className="text-sm space-y-1">
-                        <div>
-                          <span className="text-gray-400">입력: </span>
-                          <code className="text-yellow-400">{tc.input || '(없음)'}</code>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">예상: </span>
-                          <code className="text-green-400">{tc.expected}</code>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">출력: </span>
-                          <code className="text-red-400">{tc.actual}</code>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 일반 실행 결과 */}
-          {!judgeResults && (
-            <>
-              <h3 className="text-sm text-gray-400 mb-2 flex items-center gap-2">
-                📤 실행 결과
-                {result && (
-                  <span className={result.success ? 'text-green-400' : 'text-red-400'}>
-                    {result.success ? '✓ 성공' : '✗ 실패'}
+          <div className="h-1/2 overflow-y-auto bg-[#0a0a0a] px-6 py-4">
+            {/* Judge Results */}
+            {judgeResults && (
+              <div className="mb-4">
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="font-title text-xs tracking-[0.2em] text-neutral-500">RESULT</span>
+                  <span className={`font-title text-sm tracking-wide ${judgeResults.allPassed ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>
+                    {judgeResults.allPassed ? 'ACCEPTED' : 'WRONG ANSWER'}
                   </span>
-                )}
-                {result?.time && <span className="text-gray-500">| {result.time}</span>}
-                {result?.memory && <span className="text-gray-500">| {result.memory}</span>}
-              </h3>
+                  <span className="text-neutral-600 text-xs">
+                    {judgeResults.passedCount}/{judgeResults.totalCount}
+                  </span>
+                </div>
 
-              {result ? (
-                <pre className="font-mono text-sm whitespace-pre-wrap text-white">
-                  {result.output}
-                </pre>
-              ) : (
-                <p className="text-gray-500">
-                  {isRunning ? '코드 실행 중...' : isJudging ? '채점 중...' : '실행 버튼을 눌러 코드를 실행하세요.'}
-                </p>
-              )}
-            </>
-          )}
-        </div>
+                <div className="space-y-2">
+                  {judgeResults.results.map((tc, i) => (
+                    <div
+                      key={i}
+                      className={`p-4 border ${tc.passed ? 'border-[#4ade80]/30 bg-[#4ade80]/5' : 'border-[#f87171]/30 bg-[#f87171]/5'}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`font-title text-xs tracking-wide ${tc.passed ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>
+                          TEST {i + 1}: {tc.passed ? 'PASS' : 'FAIL'}
+                        </span>
+                        {tc.time && <span className="text-neutral-600 text-xs">{tc.time}</span>}
+                      </div>
+
+                      {!tc.passed && (
+                        <div className="text-sm space-y-2 mt-3">
+                          <div className="flex gap-4">
+                            <span className="font-title text-neutral-600 text-xs w-16">INPUT</span>
+                            <code className="text-neutral-400">{tc.input || '(none)'}</code>
+                          </div>
+                          <div className="flex gap-4">
+                            <span className="font-title text-neutral-600 text-xs w-16">EXPECTED</span>
+                            <code className="text-[#4ade80]">{tc.expected}</code>
+                          </div>
+                          <div className="flex gap-4">
+                            <span className="font-title text-neutral-600 text-xs w-16">ACTUAL</span>
+                            <code className="text-[#f87171]">{tc.actual}</code>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Run Result */}
+            {!judgeResults && (
+              <>
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="font-title text-xs tracking-[0.2em] text-neutral-500">OUTPUT</span>
+                  {result && (
+                    <span className={`font-title text-xs tracking-wide ${result.success ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>
+                      {result.success ? 'SUCCESS' : 'ERROR'}
+                    </span>
+                  )}
+                  {result?.time && <span className="text-neutral-600 text-xs">{result.time}</span>}
+                </div>
+
+                {result ? (
+                  <pre className="font-mono text-sm whitespace-pre-wrap text-neutral-300 leading-relaxed">
+                    {result.output}
+                  </pre>
+                ) : (
+                  <p className="font-body text-neutral-600 text-sm tracking-wide">
+                    {isRunning ? 'Running...' : isJudging ? 'Judging...' : '실행 버튼을 눌러 코드를 실행하세요.'}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>
-  );
-}
-
-// 로딩 스피너
-function Spinner() {
-  return (
-    <svg
-      className="animate-spin h-4 w-4"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
   );
 }

@@ -30,7 +30,7 @@ export async function loadProblems(): Promise<Problem[]> {
       tags: typeof p.tags === 'string' ? JSON.parse(p.tags) : p.tags,
       testCases: typeof p.testCases === 'string' ? JSON.parse(p.testCases) : p.testCases,
     }));
-    return cachedProblems;
+    return cachedProblems ?? [];
   } catch (error) {
     console.error('문제 로드 실패:', error);
     return [];

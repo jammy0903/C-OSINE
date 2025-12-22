@@ -13,18 +13,15 @@ import type { TabType } from './types';
 export default function App() {
   const { activeTab, setActiveTab, selectedProblem, setUser, setSolvedStatus } = useStore();
 
-  // Firebase 인증 상태 감시
   useEffect(() => {
     const unsubscribe = onAuthChange(async (user) => {
       setUser(user);
       if (user) {
-        // 백엔드에 사용자 등록
         await registerUser({
           firebaseUid: user.uid,
           email: user.email || '',
           name: user.displayName || user.email?.split('@')[0] || 'User'
         });
-        // 풀이 상태 조회
         const status = await getUserSolvedStatus(user.uid);
         setSolvedStatus(status.solved, status.attempted);
       } else {
@@ -34,36 +31,32 @@ export default function App() {
     return () => unsubscribe();
   }, [setUser, setSolvedStatus]);
 
-  const tabs: { id: TabType; label: string; icon: string }[] = [
-    { id: 'problems', label: '문제', icon: '📋' },
-    { id: 'memory', label: '메모리', icon: '🧠' },
-    { id: 'chat', label: 'AI 튜터', icon: '💬' },
+  const tabs: { id: TabType; label: string }[] = [
+    { id: 'problems', label: 'PROBLEMS' },
+    { id: 'memory', label: 'MEMORY' },
+    { id: 'chat', label: 'AI TUTOR' },
   ];
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-white">
-      {/* 헤더 */}
-      <header className="px-4 py-3 border-b border-gray-700 flex items-center gap-4">
-        <h1 className="text-xl font-bold">
-          <span className="text-blue-400">C</span>
-          <span className="text-gray-400">·</span>
-          <span className="text-purple-400">OS</span>
-          <span className="text-gray-500 text-sm ml-2">LAB</span>
+    <div className="h-screen flex flex-col bg-[#0a0a0a] text-white">
+      {/* Header */}
+      <header className="px-8 py-5 border-b border-[#252525] flex items-center">
+        <h1 className="font-logo text-xl tracking-[0.2em] font-bold">
+          COSLAB
         </h1>
 
-        {/* 탭 */}
-        <nav className="flex gap-1 ml-4">
+        {/* Tabs */}
+        <nav className="flex gap-8 ml-16">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`font-title text-sm tracking-[0.15em] py-2 transition-all duration-300 ${
                 activeTab === tab.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  ? 'text-white border-b border-white'
+                  : 'text-neutral-500 hover:text-neutral-300'
               }`}
             >
-              <span className="mr-2">{tab.icon}</span>
               {tab.label}
             </button>
           ))}
@@ -71,21 +64,19 @@ export default function App() {
 
         <div className="flex-1" />
 
-        {/* 로그인 버튼 */}
         <LoginButton />
 
-        {/* GitHub 링크 */}
         <a
           href="https://github.com/jammy0903/C-OSINE"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-400 hover:text-white transition-colors ml-4"
+          className="font-title text-neutral-500 hover:text-white transition-colors duration-300 ml-8 text-sm tracking-[0.1em]"
         >
-          GitHub
+          GITHUB
         </a>
       </header>
 
-      {/* 메인 컨텐츠 */}
+      {/* Main */}
       <main className="flex-1 overflow-hidden">
         {activeTab === 'problems' && (
           selectedProblem ? <CodeEditor /> : <ProblemList />
@@ -94,9 +85,14 @@ export default function App() {
         {activeTab === 'chat' && <Chat />}
       </main>
 
-      {/* 푸터 */}
-      <footer className="px-4 py-2 border-t border-gray-700 text-center text-gray-500 text-sm">
-        C & OS Learning Platform • AI: Groq
+      {/* Footer */}
+      <footer className="px-8 py-3 border-t border-[#252525] flex justify-between items-center">
+        <span className="text-neutral-600 text-xs tracking-[0.15em]">
+          C & OS LEARNING PLATFORM
+        </span>
+        <span className="text-neutral-600 text-xs tracking-[0.1em]">
+          AI: GROQ
+        </span>
       </footer>
     </div>
   );

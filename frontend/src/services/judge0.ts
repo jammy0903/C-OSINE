@@ -12,6 +12,7 @@ export interface TestCaseResult {
   actual: string;
   passed: boolean;
   error?: string;
+  time?: string;
 }
 
 /**

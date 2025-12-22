@@ -60,3 +60,6 @@ temp/
 # Root level package files (monorepo용 아님)
 /package.json
 /package-lock.json
+
+# Backups
+backups/

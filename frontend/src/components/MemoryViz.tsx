@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Xarrow, { Xwrapper } from 'react-xarrows';
 import { traceCode, type Step, type MemoryBlock } from '../services/tracer';
 
@@ -34,13 +34,12 @@ export function MemoryViz() {
     if (result.success) {
       setSteps(result.steps);
     } else {
-      setError(result.message || '실행 오류');
+      setError(result.message || 'Execution error');
     }
 
     setIsLoading(false);
   };
 
-  // 줄 번호 스크롤 동기화
   const handleScroll = () => {
     if (textareaRef.current && lineNumbersRef.current) {
       lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
@@ -51,17 +50,17 @@ export function MemoryViz() {
   const lines = code.split('\n');
 
   return (
-    <div className="flex h-full">
-      {/* 왼쪽: 코드 에디터 + 설명 (통합) */}
-      <div className="w-1/2 p-4 border-r border-gray-700 flex flex-col">
-        <h2 className="text-lg font-bold mb-2">📝 C 코드</h2>
+    <div className="flex h-full bg-[#0a0a0a]">
+      {/* Left: Code Editor */}
+      <div className="w-1/2 px-8 py-6 border-r border-[#252525] flex flex-col">
+        <h2 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-4">CODE</h2>
 
-        {/* 코드 에디터 (줄 번호 포함) */}
-        <div className="flex-1 flex bg-gray-800 rounded-lg overflow-hidden min-h-0">
-          {/* 줄 번호 */}
+        {/* Code Editor */}
+        <div className="flex-1 flex border border-[#252525] overflow-hidden min-h-0">
+          {/* Line Numbers */}
           <div
             ref={lineNumbersRef}
-            className="bg-gray-700/50 text-gray-500 font-mono text-sm py-3 select-none overflow-hidden border-r border-gray-600"
+            className="bg-[#111] text-neutral-600 font-mono text-sm py-3 select-none overflow-hidden border-r border-[#252525]"
             style={{ minWidth: '3rem' }}
           >
             {lines.map((_, idx) => {
@@ -71,7 +70,7 @@ export function MemoryViz() {
                 <div
                   key={idx}
                   className={`px-2 text-right leading-6 ${
-                    isCurrentLine ? 'bg-yellow-500/30 text-yellow-300' : ''
+                    isCurrentLine ? 'bg-white/10 text-white' : ''
                   }`}
                 >
                   {lineNum}
@@ -80,9 +79,9 @@ export function MemoryViz() {
             })}
           </div>
 
-          {/* 코드 입력/표시 영역 */}
-          <div className="flex-1 relative">
-            {/* 하이라이트 레이어 - textarea 위에 배치, 클릭은 통과 */}
+          {/* Code Area */}
+          <div className="flex-1 relative bg-[#0a0a0a]">
+            {/* Highlight Layer */}
             <div className="absolute inset-0 py-3 font-mono text-sm z-20 pointer-events-none">
               {lines.map((_, idx) => {
                 const lineNum = idx + 1;
@@ -91,11 +90,11 @@ export function MemoryViz() {
                   <div
                     key={idx}
                     className={`px-3 leading-6 ${
-                      isCurrentLine ? 'bg-yellow-400/40 border-l-4 border-yellow-400' : ''
+                      isCurrentLine ? 'bg-white/10 border-l-2 border-white' : ''
                     }`}
                   >
                     {isCurrentLine && (
-                      <span className="absolute right-2 text-yellow-300 font-bold animate-pulse">◀ 현재</span>
+                      <span className="font-title absolute right-3 text-neutral-500 text-xs tracking-wide">CURRENT</span>
                     )}
                     &nbsp;
                   </div>
@@ -103,41 +102,37 @@ export function MemoryViz() {
               })}
             </div>
 
-            {/* Textarea */}
             <textarea
               ref={textareaRef}
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onScroll={handleScroll}
-              className="w-full h-full bg-transparent font-mono text-sm p-3 resize-none focus:outline-none leading-6 relative z-10"
-              style={{ color: '#ffffff' }}
-              placeholder="C 코드를 입력하세요..."
+              className="w-full h-full bg-transparent font-mono text-sm p-3 resize-none focus:outline-none leading-6 relative z-10 text-neutral-300"
+              placeholder="Enter C code..."
               spellCheck={false}
             />
           </div>
         </div>
 
-        {/* stdin 입력 */}
-        <div className="mt-3">
-          <label className="text-gray-400 text-xs flex items-center gap-1 mb-1">
-            📥 입력 (stdin)
-          </label>
+        {/* Stdin */}
+        <div className="mt-4">
+          <label className="font-title text-neutral-600 text-xs tracking-[0.15em] mb-2 block">STDIN</label>
           <textarea
             value={stdin}
             onChange={(e) => setStdin(e.target.value)}
-            placeholder="예: 3 5"
-            className="w-full h-12 bg-gray-700 text-green-400 font-mono text-sm p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+            placeholder="e.g. 3 5"
+            className="w-full h-12 bg-transparent border-b border-[#252525] font-mono text-sm p-0 pt-2 resize-none focus:border-white transition-colors text-neutral-300 placeholder-neutral-700"
           />
         </div>
 
-        {/* 실행 버튼 + 스텝 컨트롤 */}
-        <div className="mt-2 flex items-center gap-3">
+        {/* Controls */}
+        <div className="mt-4 flex items-center gap-4">
           <button
             onClick={handleTrace}
             disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-medium transition-colors"
+            className="font-title px-6 py-2 text-xs tracking-[0.15em] border border-white bg-white text-black hover:bg-transparent hover:text-white disabled:opacity-30 transition-all duration-300"
           >
-            {isLoading ? '분석 중...' : '▶ 실행 & 추적'}
+            {isLoading ? 'TRACING...' : 'TRACE'}
           </button>
 
           {steps.length > 0 && (
@@ -145,48 +140,44 @@ export function MemoryViz() {
               <button
                 onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                 disabled={currentStep === 0}
-                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded transition-colors"
+                className="font-title px-3 py-2 text-neutral-500 hover:text-white disabled:opacity-30 transition-colors"
               >
-                ◀
+                PREV
               </button>
-              <span className="text-gray-400 text-sm">
-                Step {currentStep + 1} / {steps.length}
+              <span className="font-title text-neutral-600 text-xs tracking-wide">
+                {currentStep + 1} / {steps.length}
               </span>
               <button
                 onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
                 disabled={currentStep === steps.length - 1}
-                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded transition-colors"
+                className="font-title px-3 py-2 text-neutral-500 hover:text-white disabled:opacity-30 transition-colors"
               >
-                ▶
+                NEXT
               </button>
             </>
           )}
         </div>
 
-        {error && (
-          <p className="mt-2 text-red-400 text-sm">{error}</p>
-        )}
+        {error && <p className="font-body mt-3 text-neutral-500 text-sm">{error}</p>}
 
-        {/* 설명 박스 */}
+        {/* Explanation */}
         {step && step.explanation && (
-          <div className="mt-3 bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 max-h-[30%] overflow-auto">
-            <h3 className="text-blue-400 font-bold mb-2">💡 이 단계에서 일어나는 일</h3>
-            <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+          <div className="mt-4 border border-[#252525] p-4 max-h-[25%] overflow-auto">
+            <h3 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-3">EXPLANATION</h3>
+            <pre className="font-body text-sm text-neutral-400 whitespace-pre-wrap leading-relaxed">
               {step.explanation}
             </pre>
           </div>
         )}
       </div>
 
-      {/* 오른쪽: 메모리 시각화 */}
-      <div className="w-1/2 p-4 overflow-auto">
-        <h2 className="text-lg font-bold mb-2">🧠 메모리</h2>
+      {/* Right: Memory Visualization */}
+      <div className="w-1/2 px-8 py-6 overflow-auto">
+        <h2 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-4">MEMORY</h2>
 
         {!step ? (
-          <div className="text-center text-gray-500 mt-16">
-            <p className="text-4xl mb-4">📦</p>
-            <p>코드를 실행하면</p>
-            <p>메모리 상태가 표시됩니다</p>
+          <div className="h-full flex flex-col items-center justify-center">
+            <p className="font-body text-neutral-600 text-sm tracking-wide">Run trace to visualize memory</p>
           </div>
         ) : (
           <Xwrapper>
@@ -198,11 +189,9 @@ export function MemoryViz() {
   );
 }
 
-// 메모리 격자 시각화 컴포넌트
 function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[] }) {
   const allBlocks = [...stack, ...heap];
 
-  // 포인터 연결 정보 수집
   const pointerConnections: { from: string; to: string }[] = [];
   allBlocks.forEach(block => {
     if (block.points_to) {
@@ -217,36 +206,30 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
   });
 
   return (
-    <div className="space-y-4">
-      {/* 전체 메모리 컨테이너 */}
-      <div className="bg-gray-800 rounded-lg p-4 border-2 border-gray-600">
-        <div className="text-center text-gray-400 text-xs mb-3 uppercase tracking-wider">
-          Virtual Memory
+    <div className="space-y-6">
+      {/* Memory Container */}
+      <div className="border border-[#252525] p-6">
+        <div className="font-title text-center text-neutral-600 text-xs tracking-[0.2em] mb-6">
+          VIRTUAL MEMORY
         </div>
 
-        {/* STACK 영역 */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-purple-400 font-bold text-sm">📚 STACK</span>
-            <span className="text-gray-500 text-xs">(높은 주소 → 낮은 주소)</span>
+        {/* STACK */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="font-title text-xs tracking-[0.2em] text-neutral-400">STACK</span>
+            <span className="font-body text-neutral-600 text-xs">high → low</span>
           </div>
 
           {stack.length === 0 ? (
-            <div className="bg-purple-900/20 border border-purple-500/30 rounded p-3 text-center text-gray-500 text-sm">
-              비어있음
+            <div className="font-title border border-dashed border-[#252525] p-4 text-center text-neutral-600 text-xs">
+              EMPTY
             </div>
           ) : (
-            <div className="bg-purple-900/20 border border-purple-500/30 rounded p-3">
-              <div className="grid grid-cols-4 gap-2">
+            <div className="border border-[#252525] p-4">
+              <div className="grid grid-cols-4 gap-3">
                 {stack.map((block) => (
-                  <MemoryCell
-                    key={block.address}
-                    block={block}
-                    color="purple"
-                    allBlocks={allBlocks}
-                  />
+                  <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
                 ))}
-                {/* 빈 셀 채우기 (최소 4칸) */}
                 {stack.length < 4 && Array.from({ length: 4 - stack.length }).map((_, i) => (
                   <EmptyCell key={`empty-stack-${i}`} />
                 ))}
@@ -255,34 +238,29 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
           )}
         </div>
 
-        {/* 여유 공간 표시 */}
-        <div className="flex items-center justify-center my-3">
-          <div className="flex-1 border-t border-dashed border-gray-600"></div>
-          <span className="px-3 text-gray-500 text-xs">↕ 여유 공간</span>
-          <div className="flex-1 border-t border-dashed border-gray-600"></div>
+        {/* Separator */}
+        <div className="flex items-center justify-center my-4">
+          <div className="flex-1 border-t border-dashed border-[#252525]"></div>
+          <span className="font-title px-4 text-neutral-700 text-xs tracking-wide">FREE SPACE</span>
+          <div className="flex-1 border-t border-dashed border-[#252525]"></div>
         </div>
 
-        {/* HEAP 영역 */}
+        {/* HEAP */}
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-green-400 font-bold text-sm">🗄️ HEAP</span>
-            <span className="text-gray-500 text-xs">(낮은 주소 → 높은 주소)</span>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="font-title text-xs tracking-[0.2em] text-neutral-400">HEAP</span>
+            <span className="font-body text-neutral-600 text-xs">low → high</span>
           </div>
 
           {heap.length === 0 ? (
-            <div className="bg-green-900/20 border border-green-500/30 rounded p-3 text-center text-gray-500 text-sm">
-              비어있음 (malloc 전)
+            <div className="font-title border border-dashed border-[#252525] p-4 text-center text-neutral-600 text-xs">
+              EMPTY (before malloc)
             </div>
           ) : (
-            <div className="bg-green-900/20 border border-green-500/30 rounded p-3">
-              <div className="grid grid-cols-4 gap-2">
+            <div className="border border-[#252525] p-4">
+              <div className="grid grid-cols-4 gap-3">
                 {heap.map((block) => (
-                  <MemoryCell
-                    key={block.address}
-                    block={block}
-                    color="green"
-                    allBlocks={allBlocks}
-                  />
+                  <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
                 ))}
                 {heap.length < 4 && Array.from({ length: 4 - heap.length }).map((_, i) => (
                   <EmptyCell key={`empty-heap-${i}`} />
@@ -293,14 +271,14 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
         </div>
       </div>
 
-      {/* 포인터 화살표 */}
+      {/* Pointer Arrows */}
       {pointerConnections.map((conn, idx) => (
         <Xarrow
           key={idx}
           start={conn.from}
           end={conn.to}
-          color="#f97316"
-          strokeWidth={2}
+          color="#ffffff"
+          strokeWidth={1}
           headSize={4}
           curveness={0.5}
           dashness={false}
@@ -308,25 +286,25 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
         />
       ))}
 
-      {/* 범례 */}
-      <div className="bg-gray-800 rounded-lg p-3 text-xs">
-        <div className="text-gray-400 mb-2 font-bold">범례</div>
-        <div className="grid grid-cols-2 gap-2">
+      {/* Legend */}
+      <div className="border border-[#252525] p-4">
+        <div className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-3">LEGEND</div>
+        <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-purple-500/50 border border-purple-500 rounded"></div>
-            <span className="text-gray-300">스택 변수</span>
+            <div className="w-3 h-3 border border-neutral-500"></div>
+            <span className="font-body text-neutral-400">Stack variable</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500/50 border border-green-500 rounded"></div>
-            <span className="text-gray-300">힙 메모리</span>
+            <div className="w-3 h-3 border border-neutral-600 bg-neutral-800"></div>
+            <span className="font-body text-neutral-400">Heap memory</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 border-2 border-orange-500 rounded"></div>
-            <span className="text-gray-300">포인터</span>
+            <div className="w-3 h-3 border-2 border-white"></div>
+            <span className="font-body text-neutral-400">Pointer</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-0 border-t-2 border-orange-500"></div>
-            <span className="text-gray-300">가리킴</span>
+            <div className="w-6 h-0 border-t border-white"></div>
+            <span className="font-body text-neutral-400">Points to</span>
           </div>
         </div>
       </div>
@@ -334,81 +312,56 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
   );
 }
 
-// 개별 메모리 셀 컴포넌트
-function MemoryCell({
-  block,
-  color,
-  allBlocks
-}: {
-  block: MemoryBlock;
-  color: 'purple' | 'green';
-  allBlocks: MemoryBlock[];
-}) {
+function MemoryCell({ block, allBlocks }: { block: MemoryBlock; allBlocks: MemoryBlock[] }) {
   const isPointer = block.type.includes('*');
-
-  // 포인터가 가리키는 대상 찾기
   const pointsToBlock = block.points_to
     ? allBlocks.find(b => b.address === block.points_to)
     : null;
 
-  const bgColor = color === 'purple' ? 'bg-purple-600/30' : 'bg-green-600/30';
-  const borderColor = isPointer
-    ? 'border-orange-500 border-2'
-    : color === 'purple'
-      ? 'border-purple-500'
-      : 'border-green-500';
-
   return (
     <div
       id={`block-${block.address}`}
-      className={`${bgColor} ${borderColor} border rounded-lg p-2 text-center transition-all hover:scale-105`}
+      className={`border p-3 text-center transition-all hover:border-white ${
+        isPointer ? 'border-white border-2' : 'border-[#252525]'
+      }`}
     >
-      {/* 변수명 */}
-      <div className="font-mono font-bold text-blue-300 text-sm truncate" title={block.name}>
+      {/* Variable Name */}
+      <div className="font-mono text-white text-sm truncate" title={block.name}>
         {block.name}
       </div>
 
-      {/* 값 */}
-      <div className="text-lg font-bold text-yellow-400 my-1">
+      {/* Value */}
+      <div className="text-lg font-light text-white my-2">
         {isPointer && pointsToBlock ? (
-          <span className="text-orange-400 text-sm">
-            →{pointsToBlock.name}
-          </span>
+          <span className="text-neutral-400 text-sm">→ {pointsToBlock.name}</span>
         ) : isPointer && block.points_to ? (
-          <span className="text-orange-400 text-xs font-mono">
-            {block.points_to}
-          </span>
+          <span className="text-neutral-500 text-xs font-mono">{block.points_to}</span>
         ) : (
           block.value
         )}
       </div>
 
-      {/* 주소 */}
-      <div className="text-xs text-gray-500 font-mono truncate" title={block.address}>
+      {/* Address */}
+      <div className="text-xs text-neutral-600 font-mono truncate" title={block.address}>
         {formatAddress(block.address)}
       </div>
 
-      {/* 타입 표시 */}
-      <div className="text-xs text-gray-400 mt-1">
-        {block.type}
-      </div>
+      {/* Type */}
+      <div className="text-xs text-neutral-500 mt-1">{block.type}</div>
     </div>
   );
 }
 
-// 빈 셀 컴포넌트
 function EmptyCell() {
   return (
-    <div className="bg-gray-700/20 border border-gray-600/30 border-dashed rounded-lg p-2 text-center">
-      <div className="text-gray-600 text-xs">-</div>
+    <div className="border border-dashed border-[#252525] p-3 text-center">
+      <div className="text-neutral-700 text-xs">-</div>
     </div>
   );
 }
 
-// 주소 포맷팅 (긴 주소 축약)
 function formatAddress(addr: string): string {
   if (!addr) return '';
-  // 0x7fff... 형식이면 마지막 4자리만 표시
   if (addr.length > 8) {
     return '...' + addr.slice(-4);
   }

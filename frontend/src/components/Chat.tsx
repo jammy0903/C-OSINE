@@ -5,10 +5,8 @@ import { askAI } from '../services/groq';
 export function Chat() {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const { messages, isAiLoading, addMessage, setAiLoading, clearMessages } = useStore();
 
-  // 자동 스크롤
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -17,35 +15,27 @@ export function Chat() {
     const trimmed = input.trim();
     if (!trimmed || isAiLoading) return;
 
-    // 사용자 메시지 추가
-    const userMsg = {
+    addMessage({
       id: crypto.randomUUID(),
-      role: 'user' as const,
+      role: 'user',
       content: trimmed,
-    };
-    addMessage(userMsg);
+    });
     setInput('');
     setAiLoading(true);
 
     try {
-      // AI 응답 요청
-      const history = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const history = messages.map((m) => ({ role: m.role, content: m.content }));
       const response = await askAI(trimmed, history);
-
-      // AI 메시지 추가
       addMessage({
         id: crypto.randomUUID(),
         role: 'assistant',
         content: response,
       });
-    } catch (error) {
+    } catch {
       addMessage({
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: '오류가 발생했습니다. 다시 시도해주세요.',
+        content: 'Error occurred. Please try again.',
       });
     } finally {
       setAiLoading(false);
@@ -59,119 +49,108 @@ export function Chat() {
     }
   };
 
+  const suggestions = [
+    'What is a pointer?',
+    'Explain malloc and free',
+    'Process vs Thread',
+  ];
+
   return (
-    <div className="flex flex-col h-full">
-      {/* 메시지 목록 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center text-gray-500 mt-8">
-            <p className="text-lg mb-2">👋 안녕하세요!</p>
-            <p>C 언어나 운영체제에 대해 질문해보세요.</p>
-            <div className="mt-4 space-y-2">
-              <SuggestedQuestion onClick={setInput}>포인터가 뭐야?</SuggestedQuestion>
-              <SuggestedQuestion onClick={setInput}>malloc과 free 설명해줘</SuggestedQuestion>
-              <SuggestedQuestion onClick={setInput}>프로세스와 스레드 차이</SuggestedQuestion>
+    <div className="flex flex-col h-full bg-[#0a0a0a]">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-8 py-8">
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center">
+            <h2 className="font-title text-2xl font-light tracking-[0.2em] text-white mb-4">
+              AI TUTOR
+            </h2>
+            <p className="font-body text-neutral-500 text-sm tracking-wide mb-12">
+              Ask about C language or operating systems
+            </p>
+            <div className="flex flex-col gap-3">
+              {suggestions.map((text) => (
+                <button
+                  key={text}
+                  onClick={() => setInput(text)}
+                  className="font-body px-6 py-3 border border-[#252525] text-neutral-400 text-sm tracking-wide hover:border-white hover:text-white transition-all duration-300"
+                >
+                  {text}
+                </button>
+              ))}
             </div>
+          </div>
+        ) : (
+          <div className="max-w-3xl mx-auto space-y-8">
+            {messages.map((msg) => (
+              <div key={msg.id} className={msg.role === 'user' ? 'text-right' : ''}>
+                <span className="font-title text-neutral-600 text-xs tracking-[0.2em] uppercase mb-2 block">
+                  {msg.role === 'user' ? 'YOU' : 'AI'}
+                </span>
+                <div className={`inline-block text-left max-w-[85%] ${
+                  msg.role === 'user'
+                    ? 'bg-white text-black px-6 py-4'
+                    : 'text-neutral-300'
+                }`}>
+                  <MessageContent content={msg.content} />
+                </div>
+              </div>
+            ))}
+
+            {isAiLoading && (
+              <div>
+                <span className="font-title text-neutral-600 text-xs tracking-[0.2em] uppercase mb-2 block">AI</span>
+                <span className="font-body text-neutral-500 animate-pulse">Thinking...</span>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
         )}
-
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-100'
-              }`}
-            >
-              <MessageContent content={msg.content} />
-            </div>
-          </div>
-        ))}
-
-        {isAiLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-700 rounded-lg px-4 py-2 text-gray-400">
-              <span className="animate-pulse">생각 중...</span>
-            </div>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* 입력 영역 */}
-      <div className="border-t border-gray-700 p-4">
-        <div className="flex gap-2">
+      {/* Input */}
+      <div className="border-t border-[#252525] px-8 py-6">
+        <div className="max-w-3xl mx-auto flex gap-4">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="질문을 입력하세요... (Enter로 전송)"
-            className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 resize-none focus:outline-none focus:border-blue-500"
-            rows={2}
+            placeholder="Type your question..."
+            className="flex-1 bg-transparent border-b border-[#252525] px-0 py-3 resize-none focus:border-white transition-colors text-sm tracking-wide placeholder-neutral-600"
+            rows={1}
             disabled={isAiLoading}
           />
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={handleSend}
-              disabled={isAiLoading || !input.trim()}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
-            >
-              전송
-            </button>
-            <button
-              onClick={clearMessages}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-sm"
-            >
-              초기화
-            </button>
-          </div>
+          <button
+            onClick={handleSend}
+            disabled={isAiLoading || !input.trim()}
+            className="font-title px-6 py-3 text-xs tracking-[0.2em] border border-[#252525] hover:border-white hover:bg-white hover:text-black disabled:opacity-30 disabled:hover:border-[#252525] disabled:hover:bg-transparent disabled:hover:text-white transition-all duration-300"
+          >
+            SEND
+          </button>
+          <button
+            onClick={clearMessages}
+            className="font-title px-4 py-3 text-xs tracking-[0.15em] text-neutral-500 hover:text-white transition-colors duration-300"
+          >
+            CLEAR
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// 제안 질문 버튼
-function SuggestedQuestion({
-  children,
-  onClick,
-}: {
-  children: string;
-  onClick: (text: string) => void;
-}) {
-  return (
-    <button
-      onClick={() => onClick(children)}
-      className="block mx-auto px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-sm transition-colors"
-    >
-      {children}
-    </button>
-  );
-}
-
-// 메시지 내용 (코드 블록 처리)
 function MessageContent({ content }: { content: string }) {
-  // 코드 블록 분리
   const parts = content.split(/(```[\s\S]*?```)/g);
 
   return (
-    <div className="whitespace-pre-wrap">
+    <div className="whitespace-pre-wrap leading-relaxed">
       {parts.map((part, i) => {
         if (part.startsWith('```')) {
-          // 코드 블록
           const match = part.match(/```(\w+)?\n?([\s\S]*?)```/);
           if (match) {
             const [, , code] = match;
             return (
-              <pre
-                key={i}
-                className="my-2 p-3 bg-gray-900 rounded-lg overflow-x-auto text-sm"
-              >
+              <pre key={i} className="my-4 p-4 bg-[#111] text-neutral-300 text-sm overflow-x-auto">
                 <code>{code.trim()}</code>
               </pre>
             );

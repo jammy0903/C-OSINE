@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Background layers */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+
+  /* Text colors */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #505050;
+
+  /* Border */
+  --border-color: #252525;
+
+  /* Accent colors */
+  --color-success: #4ade80;
+  --color-error: #f87171;
+  --color-warning: #fbbf24;
+  --color-pointer: #fb923c;
+  --color-stack: #a78bfa;
+  --color-heap: #34d399;
+
+  /* Fonts */
+  --font-logo: 'Orbitron', sans-serif;
+  --font-logo-kr: 'Gugi', sans-serif;
+  --font-title: 'Rajdhani', sans-serif;
+  --font-title-kr: 'Do Hyeon', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-body-kr: 'Gothic A1', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,61 +41,75 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background-color: #111827;
-  color: #f3f4f6;
+  font-family: var(--font-body), var(--font-body-kr), sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* input/textarea 색상 상속 */
+/* Font utility classes */
+.font-logo {
+  font-family: var(--font-logo), var(--font-logo-kr), sans-serif;
+}
+
+.font-title {
+  font-family: var(--font-title), var(--font-title-kr), sans-serif;
+}
+
+.font-body {
+  font-family: var(--font-body), var(--font-body-kr), sans-serif;
+}
+
+/* Input styles */
 input, textarea {
   color: inherit;
+  font-family: inherit;
+  letter-spacing: inherit;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* 스크롤바 */
+/* Minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 4px;
+  background: var(--border-color);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: var(--text-muted);
 }
 
-/* 코드 블록 */
+/* Code blocks */
 pre, code {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 
-/* 메모리 블록 애니메이션 */
-.memory-block {
-  transition: all 0.3s ease;
+/* Focus states */
+input:focus, textarea:focus, button:focus {
+  outline: none;
 }
 
-.memory-block-enter {
-  animation: slideIn 0.3s ease;
+/* Selection */
+::selection {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
+/* Color utility classes */
+.text-success { color: var(--color-success); }
+.text-error { color: var(--color-error); }
+.text-warning { color: var(--color-warning); }
+.border-success { border-color: var(--color-success); }
+.border-error { border-color: var(--color-error); }
+.border-warning { border-color: var(--color-warning); }

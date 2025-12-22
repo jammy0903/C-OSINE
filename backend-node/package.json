@@ -8,6 +8,8 @@
     "build": "tsc",
     "start": "node dist/app.js",
     "seed": "ts-node prisma/seed.ts",
+    "backup": "ts-node scripts/backup.ts",
+    "restore": "ts-node scripts/backup.ts restore",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
