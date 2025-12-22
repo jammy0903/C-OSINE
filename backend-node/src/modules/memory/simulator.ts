@@ -53,8 +53,13 @@ class CSimulator {
   private heapBlocks: Map<string, HeapBlock> = new Map();
   private stackOffset = 0;
   private heapOffset = 0;
+  private stdinBuffer: string[] = [];
+  private stdinIndex = 0;
 
-  simulate(code: string): { success: boolean; steps: Step[]; source_lines: string[]; message: string } {
+  simulate(code: string, stdin = ''): { success: boolean; steps: Step[]; source_lines: string[]; message: string } {
+    // stdin을 토큰으로 분리 (공백, 개행 기준)
+    this.stdinBuffer = stdin.trim().split(/\s+/).filter(s => s.length > 0);
+    this.stdinIndex = 0;
     const lines = code.trim().split('\n');
     const steps: Step[] = [];
     let inMain = false;
@@ -164,12 +169,99 @@ class CSimulator {
       return this.handleVarAssign(lineNum, code, varAssign[1], parseInt(varAssign[2]));
     }
 
+    // scanf
+    const scanfMatch = code.match(/scanf\s*\(\s*"([^"]+)"\s*,\s*(.+)\s*\)/);
+    if (scanfMatch) {
+      return this.handleScanf(lineNum, code, scanfMatch[1], scanfMatch[2]);
+    }
+
     // printf
     if (code.includes('printf')) {
-      return this.createStep(lineNum, code, 'printf: 변수 값을 화면에 출력');
+      return this.handlePrintf(lineNum, code);
     }
 
     return null;
+  }
+
+  private handleScanf(lineNum: number, code: string, format: string, argsStr: string): Step {
+    // 변수 이름들 추출 (&a, &b 형태에서 a, b 추출)
+    const args = argsStr.split(',').map(arg => {
+      const trimmed = arg.trim();
+      // &var 형태면 var만 추출
+      if (trimmed.startsWith('&')) {
+        return trimmed.slice(1);
+      }
+      return trimmed;
+    });
+
+    // %d 개수 확인
+    const formatCount = (format.match(/%d/g) || []).length;
+    const readValues: { name: string; value: number }[] = [];
+
+    for (let i = 0; i < Math.min(formatCount, args.length); i++) {
+      const varName = args[i];
+      const v = this.variables.get(varName);
+
+      if (v && this.stdinIndex < this.stdinBuffer.length) {
+        const inputValue = parseInt(this.stdinBuffer[this.stdinIndex], 10) || 0;
+        this.stdinIndex++;
+
+        // 변수 값 업데이트
+        v.value = String(inputValue);
+        v.bytes = this.intToBytes(inputValue, 4);
+        readValues.push({ name: varName, value: inputValue });
+      } else if (v) {
+        // stdin 부족 - 0으로 처리
+        readValues.push({ name: varName, value: 0 });
+      }
+    }
+
+    const inputInfo = readValues.length > 0
+      ? readValues.map(r => `${r.name} = ${r.value}`).join(', ')
+      : '(입력 없음)';
+
+    const explanation = `📥 scanf: 키보드 입력 받기
+
+• 형식: "${format}"
+• 읽은 값: ${inputInfo}
+
+💡 scanf는 stdin(표준입력)에서 값을 읽어 변수에 저장
+   &${args[0]}는 '${args[0]}'의 주소를 전달 (값을 저장할 위치)
+
+${this.stdinIndex > readValues.length ? '⚠️ 입력값이 부족합니다!' : '✓ 입력 완료'}`;
+
+    return this.createStep(lineNum, code, explanation);
+  }
+
+  private handlePrintf(lineNum: number, code: string): Step {
+    // printf 분석
+    const printfMatch = code.match(/printf\s*\(\s*"([^"]+)"(?:\s*,\s*(.+))?\s*\)/);
+    let explanation = 'printf: 화면에 출력';
+
+    if (printfMatch) {
+      const format = printfMatch[1];
+      const argsStr = printfMatch[2];
+
+      if (argsStr) {
+        const args = argsStr.split(',').map(a => a.trim());
+        const values = args.map(arg => {
+          const v = this.variables.get(arg);
+          return v ? `${arg}=${v.value}` : arg;
+        });
+
+        explanation = `📤 printf: 화면에 출력
+
+• 형식: "${format}"
+• 변수: ${values.join(', ')}
+
+💡 printf는 stdout(표준출력)에 값을 출력
+   %d는 정수, %s는 문자열, \\n은 줄바꿈`;
+      } else {
+        explanation = `📤 printf: "${format.replace(/\\n/g, '↵')}" 출력`;
+      }
+    }
+
+    return this.createStep(lineNum, code, explanation);
   }
 
   private handleArrayDecl(lineNum: number, code: string, name: string, size: number, values: number[] | null): Step {
@@ -570,10 +662,10 @@ class CSimulator {
   }
 }
 
-export function simulateCode(code: string): { success: boolean; steps: Step[]; source_lines: string[]; error?: string; message?: string } {
+export function simulateCode(code: string, stdin = ''): { success: boolean; steps: Step[]; source_lines: string[]; error?: string; message?: string } {
   try {
     const sim = new CSimulator();
-    return sim.simulate(code);
+    return sim.simulate(code, stdin);
   } catch (e: any) {
     return {
       success: false,

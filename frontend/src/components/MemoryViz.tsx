@@ -15,6 +15,7 @@ int main() {
 
 export function MemoryViz() {
   const [code, setCode] = useState(DEFAULT_CODE);
+  const [stdin, setStdin] = useState('');
   const [steps, setSteps] = useState<Step[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +29,7 @@ export function MemoryViz() {
     setSteps([]);
     setCurrentStep(0);
 
-    const result = await traceCode(code);
+    const result = await traceCode(code, stdin);
 
     if (result.success) {
       setSteps(result.steps);
@@ -115,8 +116,21 @@ export function MemoryViz() {
           </div>
         </div>
 
+        {/* stdin 입력 */}
+        <div className="mt-3">
+          <label className="text-gray-400 text-xs flex items-center gap-1 mb-1">
+            📥 입력 (stdin)
+          </label>
+          <textarea
+            value={stdin}
+            onChange={(e) => setStdin(e.target.value)}
+            placeholder="예: 3 5"
+            className="w-full h-12 bg-gray-700 text-green-400 font-mono text-sm p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+          />
+        </div>
+
         {/* 실행 버튼 + 스텝 컨트롤 */}
-        <div className="mt-3 flex items-center gap-3">
+        <div className="mt-2 flex items-center gap-3">
           <button
             onClick={handleTrace}
             disabled={isLoading}

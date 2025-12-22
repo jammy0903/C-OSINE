@@ -1,9 +1,9 @@
 /**
- * 백엔드 GDB 트레이서 API
- * C 코드 실행 및 메모리 상태 추적
+ * Node.js 백엔드 메모리 트레이서 API
+ * C 코드 시뮬레이션 및 메모리 상태 추적
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export interface MemoryBlock {
   name: string;
@@ -33,15 +33,16 @@ export interface TraceResult {
   message?: string;
 }
 
-export async function traceCode(code: string): Promise<TraceResult> {
+export async function traceCode(code: string, stdin = ''): Promise<TraceResult> {
   try {
-    const response = await fetch(`${API_URL}/api/trace`, {
+    const response = await fetch(`${API_URL}/api/memory/trace`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         code,
+        stdin,
         timeout: 10,
       }),
     });
