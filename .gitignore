@@ -1,13 +1,62 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+*.egg-info/
+
+# Environment
 *.env
 .env
 .env.*
 !.env.example
-__pycache__/
-*.pyc
 
-# Secrets (절대 커밋 금지!)
+# Secrets
 .secrets/
 *.key
 *.pem
 *.crt
 *.cert
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+prisma/*.db
+prisma/*.db-journal
+
+# Temporary
+tmp/
+temp/
+.tmp/
+
+# Root level package files (monorepo용 아님)
+/package.json
+/package-lock.json
