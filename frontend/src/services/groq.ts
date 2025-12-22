@@ -1,14 +1,13 @@
 /**
- * Groq API - AI 튜터
- * 무료 tier (rate limit 있음)
- * https://console.groq.com
+ * xAI Grok API - AI 튜터
+ * https://x.ai
  */
 
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
+const XAI_URL = 'https://api.x.ai/v1/chat/completions';
+const API_KEY = import.meta.env.VITE_XAI_API_KEY || '';
 
-// 무료이면서 빠른 모델
-const MODEL = 'llama-3.1-8b-instant';
+// Grok 모델
+const MODEL = 'grok-3-mini-beta';
 
 const SYSTEM_PROMPT = `당신은 C 언어와 운영체제(OS) 전문 튜터입니다.
 이 플랫폼의 사용자는 C 프로그래밍과 OS를 배우러 온 학습자입니다.
@@ -61,7 +60,7 @@ export async function askAI(
 ): Promise<string> {
   // API 키 체크
   if (!API_KEY) {
-    return '⚠️ VITE_GROQ_API_KEY가 설정되지 않았습니다.\n.env 파일에 API 키를 추가하세요.\n\nGroq 무료 API 키: https://console.groq.com';
+    return '⚠️ VITE_XAI_API_KEY가 설정되지 않았습니다.\n.env 파일에 API 키를 추가하세요.\n\nxAI API: https://x.ai';
   }
 
   // 메시지 구성
@@ -72,7 +71,7 @@ export async function askAI(
   ];
 
   try {
-    const response = await fetch(GROQ_URL, {
+    const response = await fetch(XAI_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

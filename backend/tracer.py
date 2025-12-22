@@ -146,15 +146,21 @@ next
 
     gdb_commands += "\nquit\n"
 
-    result = subprocess.run(
-        ["gdb", "-batch", "-x", "/dev/stdin", bin_path],
-        input=gdb_commands,
-        capture_output=True,
-        text=True,
-        timeout=timeout
-    )
+    # GDB 명령을 임시 파일에 저장 (WSL에서 /dev/stdin 문제 회피)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.gdb', delete=False) as f:
+        f.write(gdb_commands)
+        gdb_script_path = f.name
 
-    return result.stdout
+    try:
+        result = subprocess.run(
+            ["gdb", "-batch", "-x", gdb_script_path, bin_path],
+            capture_output=True,
+            text=True,
+            timeout=timeout
+        )
+        return result.stdout
+    finally:
+        os.unlink(gdb_script_path)
 
 def parse_gdb_output(output: str, code: str) -> List[Step]:
     """GDB 출력 파싱"""
@@ -177,21 +183,70 @@ def parse_gdb_output(output: str, code: str) -> List[Step]:
 def parse_step_block(block: str, code_lines: List[str]) -> Optional[Step]:
     """스텝 블록 파싱"""
 
-    # 현재 라인 번호
-    line_match = re.search(r'(\d+)\s+', block)
+    # 현재 라인 번호 (at file.c:LINE 형식)
+    line_match = re.search(r'at [^:]+:(\d+)', block)
     if not line_match:
-        return None
+        # 폴백: 숫자로 시작하는 라인
+        line_match = re.search(r'^(\d+)\s+', block, re.MULTILINE)
+        if not line_match:
+            return None
 
     line_num = int(line_match.group(1))
     code = code_lines[line_num - 1] if 0 < line_num <= len(code_lines) else ""
 
     # 변수들 파싱
     stack = []
+
+    # 방법 1: GDB Python 출력 (VAR:name|ADDR:...) 형식
     var_pattern = r'VAR:(\w+)\|ADDR:(0x[0-9a-f]+)\|TYPE:([^|]+)\|SIZE:(\d+)'
     bytes_pattern = r'BYTES:([0-9a-f ]+)'
     points_pattern = r'POINTS_TO:(0x[0-9a-f]+)'
 
     var_matches = list(re.finditer(var_pattern, block))
+
+    # 방법 2: info locals 출력 (name = value) 형식 - 폴백
+    if not var_matches:
+        locals_pattern = r'^(\w+) = (-?\d+|0x[0-9a-f]+)$'
+        for match in re.finditer(locals_pattern, block, re.MULTILINE):
+            name = match.group(1)
+            value = match.group(2)
+            # 간단한 변수 정보 생성
+            try:
+                int_val = int(value, 0)  # 0x 형식도 처리
+                bytes_list = list(int_val.to_bytes(4, byteorder='little', signed=True))
+            except:
+                int_val = 0
+                bytes_list = [0, 0, 0, 0]
+
+            stack.append(MemoryBlock(
+                name=name,
+                address="0x????",  # info locals에서는 주소 정보 없음
+                type="int",
+                size=4,
+                bytes=bytes_list,
+                value=str(int_val),
+                points_to=None
+            ))
+
+        if stack:
+            # RSP, RBP
+            rsp = ""
+            rbp = ""
+            rsp_match = re.search(r'rsp\s+(0x[0-9a-f]+)', block)
+            rbp_match = re.search(r'rbp\s+(0x[0-9a-f]+)', block)
+            if rsp_match:
+                rsp = rsp_match.group(1)
+            if rbp_match:
+                rbp = rbp_match.group(1)
+
+            return Step(
+                line=line_num,
+                code=code.strip(),
+                stack=stack,
+                heap=[],
+                rsp=rsp,
+                rbp=rbp
+            )
 
     for i, match in enumerate(var_matches):
         name = match.group(1)

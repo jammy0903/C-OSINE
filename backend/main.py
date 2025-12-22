@@ -5,7 +5,8 @@ COSLAB Backend - C 코드 메모리 트레이서 API
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from tracer import trace_code
+from typing import List, Optional
+from simulator import simulate_code  # GDB 대신 교육용 시뮬레이터
 
 app = FastAPI(
     title="COSLAB API",
@@ -29,6 +30,7 @@ class TraceRequest(BaseModel):
 class TraceResponse(BaseModel):
     success: bool
     steps: list = []
+    source_lines: List[str] = []
     error: str = ""
     message: str = ""
 
@@ -71,11 +73,12 @@ def trace(request: TraceRequest):
                 detail=f"보안상 허용되지 않는 코드: {pattern}"
             )
 
-    result = trace_code(request.code, timeout=min(request.timeout, 30))
+    result = simulate_code(request.code, timeout=min(request.timeout, 30))
 
     return TraceResponse(
         success=result.get("success", False),
         steps=result.get("steps", []),
+        source_lines=result.get("source_lines", []),
         error=result.get("error", ""),
         message=result.get("message", "")
     )

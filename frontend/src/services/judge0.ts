@@ -107,3 +107,59 @@ function decodeBase64(str: string): string {
     return atob(str);
   }
 }
+
+// 테스트 케이스 결과 타입
+export interface TestCaseResult {
+  input: string;
+  expected: string;
+  actual: string;
+  passed: boolean;
+  time?: string;
+  memory?: string;
+  error?: string;
+}
+
+// 출력 비교 (공백/개행 정규화)
+function normalizeOutput(str: string): string {
+  return str.trim().replace(/\r\n/g, '\n').replace(/\s+$/gm, '');
+}
+
+// 테스트 케이스 채점
+export async function runTestCases(
+  code: string,
+  testCases: { input: string; output: string }[]
+): Promise<{
+  results: TestCaseResult[];
+  allPassed: boolean;
+  passedCount: number;
+  totalCount: number;
+}> {
+  const results: TestCaseResult[] = [];
+
+  for (const tc of testCases) {
+    const result = await runCode(code, tc.input);
+
+    const actual = normalizeOutput(result.output);
+    const expected = normalizeOutput(tc.output);
+    const passed = result.success && actual === expected;
+
+    results.push({
+      input: tc.input,
+      expected: tc.output,
+      actual: result.output,
+      passed,
+      time: result.time,
+      memory: result.memory,
+      error: result.success ? undefined : result.output,
+    });
+  }
+
+  const passedCount = results.filter((r) => r.passed).length;
+
+  return {
+    results,
+    allPassed: passedCount === testCases.length,
+    passedCount,
+    totalCount: testCases.length,
+  };
+}

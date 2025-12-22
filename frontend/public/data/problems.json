@@ -1,0 +1,286 @@
+{
+  "_schema": {
+    "version": "1.0",
+    "description": "C-OSINE 문제 DB - SQLite 마이그레이션 대비 구조",
+    "generatedBy": "claude-code"
+  },
+  "problems": [
+    {
+      "id": "1000",
+      "number": 1000,
+      "title": "A+B",
+      "description": "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.\n\n## 입력\n첫째 줄에 A와 B가 주어진다. (0 < A, B < 10)\n\n## 출력\n첫째 줄에 A+B를 출력한다.",
+      "difficulty": "bronze_5",
+      "tags": [
+        "입출력",
+        "사칙연산"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n\nint main() {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    printf(\"%d\\n\", a + b);\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "1 2",
+          "output": "3"
+        },
+        {
+          "input": "5 7",
+          "output": "12"
+        },
+        {
+          "input": "9 9",
+          "output": "18"
+        },
+        {
+          "input": "1 1",
+          "output": "2"
+        },
+        {
+          "input": "0 0",
+          "output": "0"
+        }
+      ]
+    },
+    {
+      "id": "1001",
+      "number": 1001,
+      "title": "A-B",
+      "description": "두 정수 A와 B를 입력받은 다음, A-B를 출력하는 프로그램을 작성하시오.\n\n## 입력\n첫째 줄에 A와 B가 주어진다. (0 < A, B < 10)\n\n## 출력\n첫째 줄에 A-B를 출력한다.",
+      "difficulty": "bronze_5",
+      "tags": [
+        "입출력",
+        "사칙연산"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n\nint main() {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    printf(\"%d\\n\", a - b);\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "3 2",
+          "output": "1"
+        },
+        {
+          "input": "9 1",
+          "output": "8"
+        },
+        {
+          "input": "5 5",
+          "output": "0"
+        },
+        {
+          "input": "1 9",
+          "output": "-8"
+        }
+      ]
+    },
+    {
+      "id": "1008",
+      "number": 1008,
+      "title": "A/B",
+      "description": "두 정수 A와 B를 입력받은 다음, A/B를 출력하는 프로그램을 작성하시오.\n\n## 입력\n첫째 줄에 A와 B가 주어진다. (0 < A, B < 10)\n\n## 출력\n첫째 줄에 A/B를 출력한다. 실제 정답과 출력값의 절대오차 또는 상대오차가 10^-9 이하이면 정답이다.",
+      "difficulty": "bronze_4",
+      "tags": [
+        "입출력",
+        "사칙연산"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n\nint main() {\n    double a, b;\n    scanf(\"%lf %lf\", &a, &b);\n    printf(\"%.12lf\\n\", a / b);\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "1 3",
+          "output": "0.333333333333"
+        },
+        {
+          "input": "4 5",
+          "output": "0.8"
+        },
+        {
+          "input": "1 1",
+          "output": "1.0"
+        },
+        {
+          "input": "9 2",
+          "output": "4.5"
+        }
+      ]
+    },
+    {
+      "id": "10818",
+      "number": 10818,
+      "title": "최소, 최대",
+      "description": "N개의 정수가 주어진다. 이때, 최솟값과 최댓값을 구하는 프로그램을 작성하시오.\n\n## 입력\n첫째 줄에 정수의 개수 N (1 ≤ N ≤ 1,000,000)이 주어진다.\n둘째 줄에는 N개의 정수를 공백으로 구분해서 주어진다.\n\n## 출력\n첫째 줄에 최솟값과 최댓값을 공백으로 구분해 출력한다.",
+      "difficulty": "bronze_3",
+      "tags": [
+        "배열",
+        "반복문"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n\nint main() {\n    int n, num, min, max;\n    scanf(\"%d\", &n);\n    scanf(\"%d\", &num);\n    min = max = num;\n    for (int i = 1; i < n; i++) {\n        scanf(\"%d\", &num);\n        if (num < min) min = num;\n        if (num > max) max = num;\n    }\n    printf(\"%d %d\\n\", min, max);\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "5\n20 10 35 30 7",
+          "output": "7 35"
+        },
+        {
+          "input": "3\n1 2 3",
+          "output": "1 3"
+        },
+        {
+          "input": "1\n42",
+          "output": "42 42"
+        },
+        {
+          "input": "4\n-5 -1 -3 -2",
+          "output": "-5 -1"
+        }
+      ]
+    },
+    {
+      "id": "2557",
+      "number": 2557,
+      "title": "Hello World",
+      "description": "Hello World!를 출력하시오.\n\n## 입력\n없음\n\n## 출력\nHello World!를 출력하시오.",
+      "difficulty": "bronze_5",
+      "tags": [
+        "입출력"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello World!\\n\");\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "",
+          "output": "Hello World!"
+        }
+      ]
+    },
+    {
+      "id": "1546",
+      "number": 1546,
+      "title": "평균",
+      "description": "세준이는 기말고사를 망쳤다. 그래서 점수를 조작해서 엄마에게 보여주려고 한다.\n\n점수를 조작하는 방법은 다음과 같다. 우선, 최고점을 M이라고 한다.\n모든 점수를 점수/M*100으로 바꾼다.\n\n예를 들어, 최고점이 70이고, 점수가 50이면 새로운 점수는 50/70*100이므로 71.43점이다.\n\n세준이의 성적을 위의 방법대로 새로 계산했을 때, 새로운 평균을 구하는 프로그램을 작성하시오.",
+      "difficulty": "bronze_1",
+      "tags": [
+        "배열",
+        "수학"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n\nint main() {\n    int n;\n    double scores[1000], max = 0, sum = 0;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%lf\", &scores[i]);\n        if (scores[i] > max) max = scores[i];\n    }\n    for (int i = 0; i < n; i++) {\n        sum += scores[i] / max * 100;\n    }\n    printf(\"%.2lf\\n\", sum / n);\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "3\n40 80 60",
+          "output": "75.0"
+        },
+        {
+          "input": "5\n100 100 100 100 100",
+          "output": "100.0"
+        },
+        {
+          "input": "2\n50 100",
+          "output": "75.0"
+        }
+      ]
+    },
+    {
+      "id": "2750",
+      "number": 2750,
+      "title": "수 정렬하기",
+      "description": "N개의 수가 주어졌을 때, 이를 오름차순으로 정렬하는 프로그램을 작성하시오.\n\n## 입력\n첫째 줄에 수의 개수 N(1 ≤ N ≤ 1,000)이 주어진다.\n둘째 줄부터 N개의 줄에는 수가 주어진다.\n\n## 출력\n첫째 줄부터 N개의 줄에 오름차순으로 정렬한 결과를 한 줄에 하나씩 출력한다.",
+      "difficulty": "silver_5",
+      "tags": [
+        "정렬"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int n, arr[1000];\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &arr[i]);\n    }\n    qsort(arr, n, sizeof(int), compare);\n    for (int i = 0; i < n; i++) {\n        printf(\"%d\\n\", arr[i]);\n    }\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "5\n5\n2\n3\n4\n1",
+          "output": "1\n2\n3\n4\n5"
+        },
+        {
+          "input": "3\n3\n1\n2",
+          "output": "1\n2\n3"
+        },
+        {
+          "input": "1\n42",
+          "output": "42"
+        }
+      ]
+    },
+    {
+      "id": "11720",
+      "number": 11720,
+      "title": "숫자의 합",
+      "description": "N개의 숫자가 공백 없이 쓰여있다. 이 숫자를 모두 합해서 출력하는 프로그램을 작성하시오.\n\n## 입력\n첫째 줄에 숫자의 개수 N (1 ≤ N ≤ 100)이 주어진다.\n둘째 줄에 숫자 N개가 공백없이 주어진다.\n\n## 출력\n입력으로 주어진 숫자 N개의 합을 출력한다.",
+      "difficulty": "bronze_4",
+      "tags": [
+        "문자열",
+        "수학"
+      ],
+      "source": "BOJ",
+      "solution": "#include <stdio.h>\n\nint main() {\n    int n, sum = 0;\n    char digits[101];\n    scanf(\"%d\", &n);\n    scanf(\"%s\", digits);\n    for (int i = 0; i < n; i++) {\n        sum += digits[i] - '0';\n    }\n    printf(\"%d\\n\", sum);\n    return 0;\n}",
+      "testCases": [
+        {
+          "input": "5\n54321",
+          "output": "15"
+        },
+        {
+          "input": "10\n1234567890",
+          "output": "45"
+        },
+        {
+          "input": "3\n000",
+          "output": "0"
+        },
+        {
+          "input": "1\n9",
+          "output": "9"
+        }
+      ]
+    },
+    {
+      "id": "1271",
+      "number": 1271,
+      "title": "엄청난 부자2",
+      "description": "이 문제는 백준 온라인 저지에서 확인하세요.\n\nhttps://www.acmicpc.net/problem/1271\n\n난이도: bronze_5\n평균 시도: 2.8회",
+      "difficulty": "bronze_5",
+      "tags": [
+        "수학",
+        "사칙연산",
+        "임의 정밀도 / 큰 수 연산"
+      ],
+      "source": "BOJ",
+      "solution": null,
+      "testCases": [],
+      "baekjoonUrl": "https://www.acmicpc.net/problem/1271",
+      "acceptedCount": 26848
+    },
+    {
+      "id": "1330",
+      "number": 1330,
+      "title": "두 수 비교하기",
+      "description": "이 문제는 백준 온라인 저지에서 확인하세요.\n\nhttps://www.acmicpc.net/problem/1330\n\n난이도: bronze_5\n평균 시도: 2.0회",
+      "difficulty": "bronze_5",
+      "tags": [
+        "구현"
+      ],
+      "source": "BOJ",
+      "solution": null,
+      "testCases": [],
+      "baekjoonUrl": "https://www.acmicpc.net/problem/1330",
+      "acceptedCount": 229047
+    },
+    {
+      "id": "1809",
+      "number": 1809,
+      "title": "Moo",
+      "description": "이 문제는 백준 온라인 저지에서 확인하세요.\n\nhttps://www.acmicpc.net/problem/1809\n\n난이도: bronze_5\n평균 시도: 2.1회",
+      "difficulty": "bronze_5",
+      "tags": [
+        "구현"
+      ],
+      "source": "BOJ",
+      "solution": null,
+      "testCases": [],
+      "baekjoonUrl": "https://www.acmicpc.net/problem/1809",
+      "acceptedCount": 6483
+    }
+  ]
+}

@@ -32,8 +32,11 @@ export interface Problem {
   description?: string;
   difficulty: string;
   tags: string[];
-  acceptedCount: number;
-  submissionCount: number;
-  userStatus?: 'solved' | 'attempted';
+  source?: string;
+  solution?: string;  // 모범답안 (AI 생성)
   testCases?: { input: string; output: string }[];
+  // UI용 (선택적)
+  acceptedCount?: number;
+  submissionCount?: number;
+  userStatus?: 'solved' | 'attempted';
 }
