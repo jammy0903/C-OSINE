@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Xarrow, { Xwrapper } from 'react-xarrows';
 import { traceCode, type Step, type MemoryBlock } from '../services/tracer';
 
@@ -17,9 +17,10 @@ export function MemoryViz() {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [steps, setSteps] = useState<Step[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
-  const [sourceLines, setSourceLines] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
 
   const handleTrace = async () => {
     setIsLoading(true);
@@ -31,7 +32,6 @@ export function MemoryViz() {
 
     if (result.success) {
       setSteps(result.steps);
-      setSourceLines(result.source_lines);
     } else {
       setError(result.message || '실행 오류');
     }
@@ -39,94 +39,122 @@ export function MemoryViz() {
     setIsLoading(false);
   };
 
+  // 줄 번호 스크롤 동기화
+  const handleScroll = () => {
+    if (textareaRef.current && lineNumbersRef.current) {
+      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+    }
+  };
+
   const step = steps[currentStep];
+  const lines = code.split('\n');
 
   return (
     <div className="flex h-full">
-      {/* 왼쪽: 코드 에디터 */}
-      <div className="w-1/3 p-4 border-r border-gray-700 flex flex-col">
+      {/* 왼쪽: 코드 에디터 + 설명 (통합) */}
+      <div className="w-1/2 p-4 border-r border-gray-700 flex flex-col">
         <h2 className="text-lg font-bold mb-2">📝 C 코드</h2>
 
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          className="flex-1 bg-gray-800 text-green-400 font-mono text-sm p-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="C 코드를 입력하세요..."
-        />
+        {/* 코드 에디터 (줄 번호 포함) */}
+        <div className="flex-1 flex bg-gray-800 rounded-lg overflow-hidden min-h-0">
+          {/* 줄 번호 */}
+          <div
+            ref={lineNumbersRef}
+            className="bg-gray-700/50 text-gray-500 font-mono text-sm py-3 select-none overflow-hidden border-r border-gray-600"
+            style={{ minWidth: '3rem' }}
+          >
+            {lines.map((_, idx) => {
+              const lineNum = idx + 1;
+              const isCurrentLine = step && step.line === lineNum;
+              return (
+                <div
+                  key={idx}
+                  className={`px-2 text-right leading-6 ${
+                    isCurrentLine ? 'bg-yellow-500/30 text-yellow-300' : ''
+                  }`}
+                >
+                  {lineNum}
+                </div>
+              );
+            })}
+          </div>
 
-        <button
-          onClick={handleTrace}
-          disabled={isLoading}
-          className="mt-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-medium transition-colors"
-        >
-          {isLoading ? '분석 중...' : '▶ 실행 & 추적'}
-        </button>
+          {/* 코드 입력/표시 영역 */}
+          <div className="flex-1 relative">
+            {/* 하이라이트 레이어 */}
+            <div className="absolute inset-0 pointer-events-none py-3 font-mono text-sm">
+              {lines.map((_, idx) => {
+                const lineNum = idx + 1;
+                const isCurrentLine = step && step.line === lineNum;
+                return (
+                  <div
+                    key={idx}
+                    className={`px-3 leading-6 ${
+                      isCurrentLine ? 'bg-yellow-500/20' : ''
+                    }`}
+                  >
+                    {isCurrentLine && (
+                      <span className="absolute right-2 text-yellow-400">◀</span>
+                    )}
+                    &nbsp;
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Textarea */}
+            <textarea
+              ref={textareaRef}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              onScroll={handleScroll}
+              className="w-full h-full bg-transparent text-green-400 font-mono text-sm p-3 resize-none focus:outline-none leading-6"
+              placeholder="C 코드를 입력하세요..."
+              spellCheck={false}
+            />
+          </div>
+        </div>
+
+        {/* 실행 버튼 + 스텝 컨트롤 */}
+        <div className="mt-3 flex items-center gap-3">
+          <button
+            onClick={handleTrace}
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-medium transition-colors"
+          >
+            {isLoading ? '분석 중...' : '▶ 실행 & 추적'}
+          </button>
+
+          {steps.length > 0 && (
+            <>
+              <button
+                onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                disabled={currentStep === 0}
+                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded transition-colors"
+              >
+                ◀
+              </button>
+              <span className="text-gray-400 text-sm">
+                Step {currentStep + 1} / {steps.length}
+              </span>
+              <button
+                onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
+                disabled={currentStep === steps.length - 1}
+                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded transition-colors"
+              >
+                ▶
+              </button>
+            </>
+          )}
+        </div>
 
         {error && (
           <p className="mt-2 text-red-400 text-sm">{error}</p>
         )}
 
-        {/* 스텝 컨트롤 */}
-        {steps.length > 0 && (
-          <div className="mt-4 flex items-center gap-2">
-            <button
-              onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-              disabled={currentStep === 0}
-              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded"
-            >
-              ◀ Prev
-            </button>
-            <span className="text-gray-400">
-              Step {currentStep + 1} / {steps.length}
-            </span>
-            <button
-              onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
-              disabled={currentStep === steps.length - 1}
-              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded"
-            >
-              Next ▶
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* 가운데: 소스 코드 + 설명 */}
-      <div className="w-1/3 p-4 border-r border-gray-700 flex flex-col">
-        <h2 className="text-lg font-bold mb-2">📄 실행 위치</h2>
-
-        {/* 소스 코드 - 개선된 줄 번호 */}
-        <div className="bg-gray-800 rounded-lg overflow-hidden flex-1 max-h-[40%] overflow-auto">
-          <table className="w-full font-mono text-sm">
-            <tbody>
-              {(sourceLines || []).map((line, idx) => {
-                const isCurrentLine = step && step.line === idx + 1;
-                return (
-                  <tr
-                    key={idx}
-                    className={isCurrentLine ? 'bg-yellow-500/20' : ''}
-                  >
-                    {/* 줄 번호 - 배경색 + 구분선 */}
-                    <td className="w-10 text-right pr-2 pl-2 py-0.5 bg-gray-700/50 text-gray-500 select-none border-r border-gray-600">
-                      {idx + 1}
-                    </td>
-                    {/* 코드 */}
-                    <td className={`pl-3 pr-2 py-0.5 whitespace-pre ${isCurrentLine ? 'text-yellow-300' : 'text-gray-300'}`}>
-                      {line || ' '}
-                    </td>
-                    {/* 현재 실행 표시 */}
-                    <td className="w-6 text-center">
-                      {isCurrentLine && <span className="text-yellow-400">◀</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
         {/* 설명 박스 */}
         {step && step.explanation && (
-          <div className="mt-3 bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 flex-1 overflow-auto">
+          <div className="mt-3 bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 max-h-[30%] overflow-auto">
             <h3 className="text-blue-400 font-bold mb-2">💡 이 단계에서 일어나는 일</h3>
             <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
               {step.explanation}
@@ -136,7 +164,7 @@ export function MemoryViz() {
       </div>
 
       {/* 오른쪽: 메모리 시각화 */}
-      <div className="w-1/3 p-4 overflow-auto">
+      <div className="w-1/2 p-4 overflow-auto">
         <h2 className="text-lg font-bold mb-2">🧠 메모리</h2>
 
         {!step ? (
