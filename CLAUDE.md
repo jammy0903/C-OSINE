@@ -322,3 +322,18 @@ Everything else can be built incrementally.
   │     └── api/
   ├── public/
 ```
+
+---
+
+## 13. Commit Guidelines
+
+- 커밋 메시지에 Claude 서명 금지
+- `🤖 Generated with [Claude Code]` 금지
+- `Co-Authored-By: Claude` 금지
+
+---
+
+## 14. Repository Info
+
+- GitHub: jammy0903
+- Email: fuso3367@kakao.com

@@ -1,27 +1,22 @@
 /**
- * Judge0 CE API - C 코드 실행
- * 무료: 50회/일
- * https://rapidapi.com/judge0-official/api/judge0-ce
+ * C 코드 실행 API (자체 백엔드)
+ * Judge0 CE 대체 - 무제한, 빠른 응답
  */
 
-const JUDGE0_URL = 'https://judge0-ce.p.rapidapi.com';
-const API_KEY = import.meta.env.VITE_RAPIDAPI_KEY || '';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// C (GCC 9.2.0) = language_id 50
-const C_LANGUAGE_ID = 50;
-
-interface Judge0Response {
-  stdout: string | null;
-  stderr: string | null;
-  compile_output: string | null;
-  status: {
-    id: number;
-    description: string;
-  };
-  time: string | null;
-  memory: number | null;
+// 테스트 케이스 결과 타입 (기존 유지)
+export interface TestCaseResult {
+  input: string;
+  expected: string;
+  actual: string;
+  passed: boolean;
+  error?: string;
 }
 
+/**
+ * C 코드 실행 (기존 시그니처 유지)
+ */
 export async function runCode(
   code: string,
   stdin = ''
@@ -31,65 +26,32 @@ export async function runCode(
   time?: string;
   memory?: string;
 }> {
-  // API 키 체크
-  if (!API_KEY) {
-    return {
-      success: false,
-      output: '⚠️ VITE_RAPIDAPI_KEY가 설정되지 않았습니다.\n.env 파일에 API 키를 추가하세요.',
-    };
-  }
-
   try {
-    // 코드 제출 (wait=true로 결과까지 한번에)
-    const response = await fetch(`${JUDGE0_URL}/submissions?wait=true&base64_encoded=true`, {
+    const response = await fetch(`${API_URL}/api/run`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-RapidAPI-Key': API_KEY,
-        'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
       },
       body: JSON.stringify({
-        source_code: btoa(unescape(encodeURIComponent(code))), // UTF-8 safe base64
-        language_id: C_LANGUAGE_ID,
-        stdin: stdin ? btoa(stdin) : '',
+        code,
+        stdin,
+        timeout: 5,
       }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorData = await response.json().catch(() => ({}));
       return {
         success: false,
-        output: `API 오류 (${response.status}): ${errorText}`,
+        output: errorData.detail || `API 오류 (${response.status})`,
       };
     }
 
-    const result: Judge0Response = await response.json();
-
-    // 결과 디코딩
-    const stdout = result.stdout ? decodeBase64(result.stdout) : '';
-    const stderr = result.stderr ? decodeBase64(result.stderr) : '';
-    const compileOutput = result.compile_output ? decodeBase64(result.compile_output) : '';
-
-    // 상태 체크 (3 = Accepted)
-    const success = result.status?.id === 3;
-
-    // 출력 조합
-    let output = '';
-    if (compileOutput) {
-      output = `[컴파일 오류]\n${compileOutput}`;
-    } else if (stderr) {
-      output = stdout ? `${stdout}\n[stderr]\n${stderr}` : stderr;
-    } else if (stdout) {
-      output = stdout;
-    } else {
-      output = success ? '(출력 없음)' : `실행 실패: ${result.status?.description || 'Unknown'}`;
-    }
+    const result = await response.json();
 
     return {
-      success,
-      output,
-      time: result.time ? `${result.time}s` : undefined,
-      memory: result.memory ? `${result.memory} KB` : undefined,
+      success: result.success,
+      output: result.output || (result.success ? '(출력 없음)' : result.error || '실행 실패'),
     };
   } catch (error) {
     return {
@@ -99,32 +61,9 @@ export async function runCode(
   }
 }
 
-// Base64 디코딩 (UTF-8 지원)
-function decodeBase64(str: string): string {
-  try {
-    return decodeURIComponent(escape(atob(str)));
-  } catch {
-    return atob(str);
-  }
-}
-
-// 테스트 케이스 결과 타입
-export interface TestCaseResult {
-  input: string;
-  expected: string;
-  actual: string;
-  passed: boolean;
-  time?: string;
-  memory?: string;
-  error?: string;
-}
-
-// 출력 비교 (공백/개행 정규화)
-function normalizeOutput(str: string): string {
-  return str.trim().replace(/\r\n/g, '\n').replace(/\s+$/gm, '');
-}
-
-// 테스트 케이스 채점
+/**
+ * 테스트 케이스 채점 (기존 시그니처 유지)
+ */
 export async function runTestCases(
   code: string,
   testCases: { input: string; output: string }[]
@@ -134,32 +73,50 @@ export async function runTestCases(
   passedCount: number;
   totalCount: number;
 }> {
-  const results: TestCaseResult[] = [];
-
-  for (const tc of testCases) {
-    const result = await runCode(code, tc.input);
-
-    const actual = normalizeOutput(result.output);
-    const expected = normalizeOutput(tc.output);
-    const passed = result.success && actual === expected;
-
-    results.push({
-      input: tc.input,
-      expected: tc.output,
-      actual: result.output,
-      passed,
-      time: result.time,
-      memory: result.memory,
-      error: result.success ? undefined : result.output,
+  try {
+    const response = await fetch(`${API_URL}/api/judge`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        testCases,
+        timeout: 5,
+      }),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      // 에러 시 모든 테스트케이스 실패로 처리
+      return {
+        results: testCases.map((tc) => ({
+          input: tc.input,
+          expected: tc.output,
+          actual: errorData.detail || 'API 오류',
+          passed: false,
+          error: errorData.detail,
+        })),
+        allPassed: false,
+        passedCount: 0,
+        totalCount: testCases.length,
+      };
+    }
+
+    return await response.json();
+  } catch (error) {
+    // 네트워크 오류
+    return {
+      results: testCases.map((tc) => ({
+        input: tc.input,
+        expected: tc.output,
+        actual: error instanceof Error ? error.message : 'Unknown error',
+        passed: false,
+        error: 'network_error',
+      })),
+      allPassed: false,
+      passedCount: 0,
+      totalCount: testCases.length,
+    };
   }
-
-  const passedCount = results.filter((r) => r.passed).length;
-
-  return {
-    results,
-    allPassed: passedCount === testCases.length,
-    passedCount,
-    totalCount: testCases.length,
-  };
 }

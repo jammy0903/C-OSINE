@@ -82,8 +82,8 @@ export function MemoryViz() {
 
           {/* 코드 입력/표시 영역 */}
           <div className="flex-1 relative">
-            {/* 하이라이트 레이어 */}
-            <div className="absolute inset-0 pointer-events-none py-3 font-mono text-sm">
+            {/* 하이라이트 레이어 - textarea 위에 배치, 클릭은 통과 */}
+            <div className="absolute inset-0 py-3 font-mono text-sm z-20 pointer-events-none">
               {lines.map((_, idx) => {
                 const lineNum = idx + 1;
                 const isCurrentLine = step && step.line === lineNum;
@@ -91,11 +91,11 @@ export function MemoryViz() {
                   <div
                     key={idx}
                     className={`px-3 leading-6 ${
-                      isCurrentLine ? 'bg-yellow-500/20' : ''
+                      isCurrentLine ? 'bg-yellow-400/40 border-l-4 border-yellow-400' : ''
                     }`}
                   >
                     {isCurrentLine && (
-                      <span className="absolute right-2 text-yellow-400">◀</span>
+                      <span className="absolute right-2 text-yellow-300 font-bold animate-pulse">◀ 현재</span>
                     )}
                     &nbsp;
                   </div>
@@ -109,7 +109,8 @@ export function MemoryViz() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onScroll={handleScroll}
-              className="w-full h-full bg-transparent text-green-400 font-mono text-sm p-3 resize-none focus:outline-none leading-6"
+              className="w-full h-full bg-transparent font-mono text-sm p-3 resize-none focus:outline-none leading-6 relative z-10"
+              style={{ color: '#ffffff' }}
               placeholder="C 코드를 입력하세요..."
               spellCheck={false}
             />

@@ -1,7 +1,15 @@
 import { create } from 'zustand';
+import type { User } from 'firebase/auth';
 import type { Message, RunResult, MemBlock, TabType, Problem } from '../types';
 
 interface Store {
+  // === 사용자 ===
+  user: User | null;
+  setUser: (user: User | null) => void;
+  solvedProblems: string[];  // 정답 처리된 문제 ID 목록
+  attemptedProblems: string[];  // 시도한 문제 ID 목록
+  setSolvedStatus: (solved: string[], attempted: string[]) => void;
+
   // === 탭 ===
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
@@ -42,6 +50,13 @@ int main() {
 }`;
 
 export const useStore = create<Store>((set) => ({
+  // === 사용자 ===
+  user: null,
+  setUser: (user) => set({ user }),
+  solvedProblems: [],
+  attemptedProblems: [],
+  setSolvedStatus: (solved, attempted) => set({ solvedProblems: solved, attemptedProblems: attempted }),
+
   // === 탭 ===
   activeTab: 'problems',
   setActiveTab: (tab) => set({ activeTab: tab }),

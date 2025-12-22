@@ -1,13 +1,38 @@
+import { useEffect } from 'react';
 import { useStore } from './stores/store';
 import { Chat } from './components/Chat';
 import { CodeEditor } from './components/CodeEditor';
 import { MemoryViz } from './components/MemoryViz';
 import { LoginButton } from './components/LoginButton';
 import { ProblemList } from './components/ProblemList';
+import { onAuthChange } from './services/firebase';
+import { getUserSolvedStatus } from './services/submissions';
+import { registerUser } from './services/users';
 import type { TabType } from './types';
 
 export default function App() {
-  const { activeTab, setActiveTab, selectedProblem } = useStore();
+  const { activeTab, setActiveTab, selectedProblem, setUser, setSolvedStatus } = useStore();
+
+  // Firebase 인증 상태 감시
+  useEffect(() => {
+    const unsubscribe = onAuthChange(async (user) => {
+      setUser(user);
+      if (user) {
+        // 백엔드에 사용자 등록
+        await registerUser({
+          firebaseUid: user.uid,
+          email: user.email || '',
+          name: user.displayName || user.email?.split('@')[0] || 'User'
+        });
+        // 풀이 상태 조회
+        const status = await getUserSolvedStatus(user.uid);
+        setSolvedStatus(status.solved, status.attempted);
+      } else {
+        setSolvedStatus([], []);
+      }
+    });
+    return () => unsubscribe();
+  }, [setUser, setSolvedStatus]);
 
   const tabs: { id: TabType; label: string; icon: string }[] = [
     { id: 'problems', label: '문제', icon: '📋' },
@@ -71,7 +96,7 @@ export default function App() {
 
       {/* 푸터 */}
       <footer className="px-4 py-2 border-t border-gray-700 text-center text-gray-500 text-sm">
-        C & OS Learning Platform • Free APIs: Groq + Judge0
+        C & OS Learning Platform • AI: Groq
       </footer>
     </div>
   );

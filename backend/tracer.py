@@ -307,6 +307,119 @@ def parse_step_block(block: str, code_lines: List[str]) -> Optional[Step]:
         rbp=rbp
     )
 
+# ============================================
+# C 코드 실행 (GDB 없이) - Judge0 대체
+# ============================================
+
+def run_c_code(code: str, stdin: str = "", timeout: int = 5) -> Dict[str, Any]:
+    """
+    C 코드 컴파일 및 실행 (채점용)
+    tracer.py의 trace_code 로직 재사용
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        src_path = os.path.join(tmpdir, "main.c")
+        bin_path = os.path.join(tmpdir, "main")
+
+        # 소스 저장
+        with open(src_path, "w") as f:
+            f.write(code)
+
+        # 컴파일 (디버그 심볼 없이, 빠른 컴파일)
+        try:
+            compile_result = subprocess.run(
+                ["gcc", "-o", bin_path, src_path],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+        except subprocess.TimeoutExpired:
+            return {
+                "success": False,
+                "output": "컴파일 시간 초과",
+                "error": "compile_timeout"
+            }
+
+        if compile_result.returncode != 0:
+            return {
+                "success": False,
+                "output": compile_result.stderr,
+                "error": "compile_error"
+            }
+
+        # 실행
+        try:
+            run_result = subprocess.run(
+                [bin_path],
+                input=stdin,
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+
+            stdout = run_result.stdout
+            stderr = run_result.stderr
+
+            if run_result.returncode != 0 and stderr:
+                return {
+                    "success": False,
+                    "output": stderr or f"Exit code: {run_result.returncode}",
+                    "error": "runtime_error"
+                }
+
+            return {
+                "success": True,
+                "output": stdout,
+                "stderr": stderr if stderr else None
+            }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "success": False,
+                "output": f"실행 시간 초과 ({timeout}초)",
+                "error": "timeout"
+            }
+
+
+def normalize_output(s: str) -> str:
+    """출력 비교용 정규화 (judge0.ts와 동일)"""
+    return s.strip().replace('\r\n', '\n').rstrip()
+
+
+def judge_c_code(
+    code: str,
+    test_cases: List[Dict[str, str]],
+    timeout: int = 5
+) -> Dict[str, Any]:
+    """
+    테스트케이스로 채점 (judge0.ts의 runTestCases 로직 재사용)
+    """
+    results = []
+
+    for tc in test_cases:
+        run_result = run_c_code(code, tc.get("input", ""), timeout)
+
+        actual = normalize_output(run_result.get("output", ""))
+        expected = normalize_output(tc.get("output", ""))
+        passed = run_result["success"] and actual == expected
+
+        results.append({
+            "input": tc.get("input", ""),
+            "expected": tc.get("output", ""),
+            "actual": run_result.get("output", ""),
+            "passed": passed,
+            "error": run_result.get("error") if not run_result["success"] else None
+        })
+
+    passed_count = sum(1 for r in results if r["passed"])
+
+    return {
+        "results": results,
+        "allPassed": passed_count == len(test_cases),
+        "passedCount": passed_count,
+        "totalCount": len(test_cases)
+    }
+
+
 # 테스트
 if __name__ == "__main__":
     test_code = """
@@ -322,3 +435,17 @@ int main() {
 """
     result = trace_code(test_code)
     print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    # run_c_code 테스트
+    print("\n--- run_c_code 테스트 ---")
+    test_code2 = """
+#include <stdio.h>
+int main() {
+    int a, b;
+    scanf("%d %d", &a, &b);
+    printf("%d\\n", a + b);
+    return 0;
+}
+"""
+    result2 = run_c_code(test_code2, "3 5")
+    print(json.dumps(result2, indent=2, ensure_ascii=False))

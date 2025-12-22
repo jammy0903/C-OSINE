@@ -15,6 +15,11 @@ body {
   min-height: 100vh;
 }
 
+/* input/textarea 색상 상속 */
+input, textarea {
+  color: inherit;
+}
+
 #root {
   min-height: 100vh;
 }

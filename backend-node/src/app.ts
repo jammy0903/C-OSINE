@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { problemRoutes } from './modules/problems/routes';
 import { memoryRoutes } from './modules/memory/routes';
+import { submissionRoutes } from './modules/submissions/routes';
+import { userRoutes } from './modules/users/routes';
 
 dotenv.config();
 
@@ -27,6 +29,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api/problems', problemRoutes);
 app.use('/api/memory', memoryRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/users', userRoutes);
 
 // Start server
 app.listen(PORT, () => {

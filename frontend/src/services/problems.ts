@@ -1,21 +1,11 @@
 /**
  * 문제 DB 서비스
- * 현재: JSON 파일에서 로드
- * 나중에: SQLite/API로 마이그레이션 예정
+ * 백엔드 API에서 로드
  */
 
 import type { Problem } from '../types';
 
-// JSON 파일 경로 (개발: 상대경로, 프로덕션: API)
-const PROBLEMS_URL = '/data/problems.json';
-
-interface ProblemsDB {
-  _schema: {
-    version: string;
-    description: string;
-  };
-  problems: Problem[];
-}
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 let cachedProblems: Problem[] | null = null;
 
@@ -28,13 +18,18 @@ export async function loadProblems(): Promise<Problem[]> {
   }
 
   try {
-    const response = await fetch(PROBLEMS_URL);
+    const response = await fetch(`${API_URL}/api/problems`);
     if (!response.ok) {
       throw new Error(`Failed to load problems: ${response.status}`);
     }
 
-    const data: ProblemsDB = await response.json();
-    cachedProblems = data.problems;
+    const data = await response.json();
+    // 백엔드에서 tags, testCases가 JSON 문자열로 오므로 파싱
+    cachedProblems = data.map((p: any) => ({
+      ...p,
+      tags: typeof p.tags === 'string' ? JSON.parse(p.tags) : p.tags,
+      testCases: typeof p.testCases === 'string' ? JSON.parse(p.testCases) : p.testCases,
+    }));
     return cachedProblems;
   } catch (error) {
     console.error('문제 로드 실패:', error);

@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { useStore } from '../stores/store';
 import { runCode, runTestCases, type TestCaseResult } from '../services/judge0';
+import { createSubmission } from '../services/submissions';
 import CodeMirror from '@uiw/react-codemirror';
 import { cpp } from '@codemirror/lang-cpp';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 
 export function CodeEditor() {
-  const { code, setCode, result, setResult, isRunning, setRunning, selectedProblem, clearProblem } = useStore();
+  const { code, setCode, result, setResult, isRunning, setRunning, selectedProblem, clearProblem, setActiveTab, user, setSolvedStatus, solvedProblems, attemptedProblems } = useStore();
+
+  // 닫기 버튼: 문제 클리어 + 문제 목록으로 이동
+  const handleClose = () => {
+    clearProblem();
+    setActiveTab('problems');
+  };
   const [stdin, setStdin] = useState('');
+  const [isTerminalOpen, setIsTerminalOpen] = useState(true);
   const [isJudging, setIsJudging] = useState(false);
   const [judgeResults, setJudgeResults] = useState<{
     results: TestCaseResult[];
@@ -61,6 +69,29 @@ int main() {
     try {
       const results = await runTestCases(code, selectedProblem.testCases);
       setJudgeResults(results);
+
+      // 로그인된 사용자면 제출 기록 저장
+      if (user) {
+        const verdict = results.allPassed ? 'accepted' : 'wrong_answer';
+        await createSubmission({
+          firebaseUid: user.uid,
+          problemId: selectedProblem.id,
+          code,
+          verdict
+        });
+
+        // solved/attempted 상태 업데이트
+        if (results.allPassed && !solvedProblems.includes(selectedProblem.id)) {
+          // 정답이면 solved에 추가, attempted에서 제거
+          setSolvedStatus(
+            [...solvedProblems, selectedProblem.id],
+            attemptedProblems.filter(id => id !== selectedProblem.id)
+          );
+        } else if (!results.allPassed && !solvedProblems.includes(selectedProblem.id) && !attemptedProblems.includes(selectedProblem.id)) {
+          // 오답이고 아직 시도 안 했으면 attempted에 추가
+          setSolvedStatus(solvedProblems, [...attemptedProblems, selectedProblem.id]);
+        }
+      }
     } catch (error) {
       setResult({
         success: false,
@@ -83,7 +114,7 @@ int main() {
               <h2 className="text-xl font-bold text-white">{selectedProblem.title}</h2>
             </div>
             <button
-              onClick={clearProblem}
+              onClick={handleClose}
               className="px-3 py-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
             >
               ✕ 닫기
@@ -124,8 +155,8 @@ int main() {
 
       {/* 코드 에디터 영역 */}
       <div className={`flex flex-col ${selectedProblem ? 'w-1/2' : 'w-full'}`}>
-        {/* 에디터 */}
-        <div className="flex-1 overflow-hidden border-b border-gray-700">
+        {/* 에디터 - 터미널이 열려있으면 공간 나눔 */}
+        <div className={`${isTerminalOpen ? 'h-1/2' : 'flex-1'} overflow-auto border-b border-gray-700`}>
           <CodeMirror
             value={code}
             onChange={setCode}
@@ -142,7 +173,7 @@ int main() {
         </div>
 
         {/* stdin 입력 + 툴바 */}
-        <div className="p-3 bg-gray-800 border-t border-gray-700">
+        <div className="p-3 bg-gray-800 border-t border-gray-700 shrink-0">
           {/* stdin 입력 영역 */}
           <div className="mb-3">
             <label className="text-gray-400 text-sm flex items-center gap-2 mb-1">
@@ -153,7 +184,8 @@ int main() {
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
               placeholder="예: 3 5&#10;프로그램 실행 시 입력으로 사용됩니다"
-              className="w-full h-16 bg-gray-900 text-green-400 font-mono text-sm p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+              className="w-full h-16 bg-gray-900 font-mono text-sm p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+              style={{ color: '#4ade80', caretColor: '#4ade80' }}
             />
           </div>
 
@@ -199,14 +231,24 @@ int main() {
 
             <div className="flex-1" />
 
+            {/* 터미널 접기/펼치기 버튼 */}
+            <button
+              onClick={() => setIsTerminalOpen(!isTerminalOpen)}
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-1 text-sm"
+              title={isTerminalOpen ? '터미널 닫기' : '터미널 열기'}
+            >
+              {isTerminalOpen ? '▼ 터미널' : '▲ 터미널'}
+            </button>
+
             <span className="text-gray-500 text-sm">
-              Judge0 CE (무료 50회/일)
+              자체 백엔드 (무제한)
             </span>
           </div>
         </div>
 
-        {/* 결과 */}
-        <div className="h-64 overflow-y-auto bg-gray-900 p-4">
+        {/* 결과 - 접기/펼치기 가능 */}
+        {isTerminalOpen && (
+          <div className="h-1/2 overflow-y-auto bg-gray-900 p-4">
           {/* 채점 결과 */}
           {judgeResults && (
             <div className="mb-4">
@@ -274,7 +316,7 @@ int main() {
               </h3>
 
               {result ? (
-                <pre className="font-mono text-sm whitespace-pre-wrap">
+                <pre className="font-mono text-sm whitespace-pre-wrap text-white">
                   {result.output}
                 </pre>
               ) : (
@@ -285,6 +327,7 @@ int main() {
             </>
           )}
         </div>
+        )}
       </div>
     </div>
   );

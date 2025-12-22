@@ -1,19 +1,10 @@
-import { useState, useEffect } from 'react';
-import type { User } from 'firebase/auth';
-import { loginWithGoogle, logout, onAuthChange } from '../services/firebase';
+import { useState } from 'react';
+import { useStore } from '../stores/store';
+import { loginWithGoogle, logout } from '../services/firebase';
 
 export function LoginButton() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useStore();
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthChange((user) => {
-      setUser(user);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleLogin = async () => {
     setError(null);
@@ -32,10 +23,6 @@ export function LoginButton() {
       console.error('Logout failed:', e);
     }
   };
-
-  if (loading) {
-    return <div className="text-gray-400 text-sm">로딩...</div>;
-  }
 
   if (user) {
     return (

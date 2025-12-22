@@ -3,16 +3,10 @@ import { prisma } from '../../config/database';
 
 export const problemRoutes = Router();
 
-// 문제 목록
+// 문제 목록 (전체 필드)
 problemRoutes.get('/', async (req, res) => {
   try {
     const problems = await prisma.problem.findMany({
-      select: {
-        id: true,
-        number: true,
-        title: true,
-        difficulty: true
-      },
       orderBy: { number: 'asc' }
     });
     res.json(problems);
