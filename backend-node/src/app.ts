@@ -5,6 +5,7 @@ import { problemRoutes } from './modules/problems/routes';
 import { memoryRoutes } from './modules/memory/routes';
 import { submissionRoutes } from './modules/submissions/routes';
 import { userRoutes } from './modules/users/routes';
+import { cRoutes } from './modules/c/routes';
 
 dotenv.config();
 
@@ -13,14 +14,14 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:80'],
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Routes
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', service: 'COSLAB Backend API' });
+  res.json({ status: 'ok', service: 'C-OSINE Backend API' });
 });
 
 app.get('/health', (req, res) => {
@@ -31,6 +32,7 @@ app.use('/api/problems', problemRoutes);
 app.use('/api/memory', memoryRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/c', cRoutes);
 
 // 404 handler
 app.use((req, res) => {

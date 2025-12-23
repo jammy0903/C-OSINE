@@ -7,6 +7,12 @@ import type { Problem } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+// 백엔드에서 받은 Raw Problem (JSON 문자열 포함)
+interface RawProblem extends Omit<Problem, 'tags' | 'testCases'> {
+  tags: string | string[];
+  testCases: string | { input: string; output: string }[];
+}
+
 let cachedProblems: Problem[] | null = null;
 
 /**
@@ -23,9 +29,9 @@ export async function loadProblems(): Promise<Problem[]> {
       throw new Error(`Failed to load problems: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: RawProblem[] = await response.json();
     // 백엔드에서 tags, testCases가 JSON 문자열로 오므로 파싱
-    cachedProblems = data.map((p: any) => ({
+    cachedProblems = data.map((p) => ({
       ...p,
       tags: typeof p.tags === 'string' ? JSON.parse(p.tags) : p.tags,
       testCases: typeof p.testCases === 'string' ? JSON.parse(p.testCases) : p.testCases,

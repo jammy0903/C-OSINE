@@ -1,0 +1,30 @@
+services:
+  # Frontend (React + Nginx)
+  frontend:
+    build: ./frontend
+    image: jamm2ic/cosine-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Backend (Node.js)
+  backend:
+    build: ./backend-node
+    image: jamm2ic/cosine-backend:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/dev.db
+      - OLLAMA_URL=http://host.docker.internal:11434
+    volumes:
+      # Docker 소켓 공유 (C 코드 실행용)
+      - /var/run/docker.sock:/var/run/docker.sock
+      # DB 데이터 영속성
+      - cosine-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  cosine-data:

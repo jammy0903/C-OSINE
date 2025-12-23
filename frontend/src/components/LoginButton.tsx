@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { useStore } from '../stores/store';
 import { loginWithGoogle, logout } from '../services/firebase';
-
-// 프사 크기 - 여기서만 관리
-const AVATAR_SIZE = 16;
+import { Button } from './ui';
 
 export function LoginButton() {
   const { user } = useStore();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     setError(null);
+    setLoading(true);
     try {
       await loginWithGoogle();
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Login failed';
       setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,37 +31,58 @@ export function LoginButton() {
 
   if (user) {
     return (
-      <div className="flex items-center gap-3">
-        {user.photoURL && (
-          <img
-            src={user.photoURL}
-            alt=""
-            style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: '50%' }}
-          />
-        )}
-        <span className="text-[11px] text-neutral-400 max-w-[80px] truncate">
-          {user.displayName || user.email?.split('@')[0]}
-        </span>
-        <button
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-bg-elevated rounded-lg border border-white/5">
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt=""
+              className="w-5 h-5 rounded"
+            />
+          ) : (
+            <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
+              <span className="text-[10px] text-primary font-medium">
+                {(user.displayName || user.email)?.[0]?.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="text-xs text-text-secondary max-w-[80px] truncate">
+            {user.displayName || user.email?.split('@')[0]}
+          </span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleLogout}
-          className="text-[10px] text-neutral-500 hover:text-white"
         >
-          로그아웃
-        </button>
+          Logout
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <button
+    <div className="flex items-center gap-2">
+      <Button
         onClick={handleLogin}
-        className="text-[11px] rounded-full text-white"
-        style={{ padding: '7px 14px', backgroundColor: '#3182f6' }}
+        loading={loading}
+        size="sm"
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+        }
       >
-        로그인
-      </button>
-      {error && <span className="text-red-400 text-[10px]">{error}</span>}
+        Sign in
+      </Button>
+      {error && (
+        <span className="text-danger text-[10px] bg-danger/10 px-1.5 py-0.5 rounded">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

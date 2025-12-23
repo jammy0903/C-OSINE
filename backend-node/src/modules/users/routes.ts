@@ -3,6 +3,44 @@ import { prisma } from '../../config/database';
 
 export const userRoutes = Router();
 
+// 전체 사용자 목록 (Admin용)
+userRoutes.get('/', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        _count: {
+          select: {
+            submissions: true,
+            drafts: true
+          }
+        },
+        submissions: {
+          where: { verdict: 'accepted' },
+          select: { problemId: true },
+          distinct: ['problemId']
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const result = users.map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      firebaseUid: user.firebaseUid,
+      createdAt: user.createdAt,
+      totalSubmissions: user._count.submissions,
+      solvedCount: user.submissions.length,
+      draftsCount: user._count.drafts
+    }));
+
+    res.json(result);
+  } catch (error) {
+    console.error('Failed to fetch users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
 // 사용자 등록 또는 조회 (Firebase 로그인 후 호출)
 userRoutes.post('/register', async (req, res) => {
   try {

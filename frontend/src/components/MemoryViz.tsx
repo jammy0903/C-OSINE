@@ -50,18 +50,24 @@ export function MemoryViz() {
   const lines = code.split('\n');
 
   return (
-    <div className="flex h-full bg-[#161618] overflow-hidden">
+    <div className="flex h-full bg-bg rounded-xl overflow-hidden">
       {/* Left: Code Editor */}
-      <div className="w-1/2 px-8 py-6 border-r border-[#252525] flex flex-col">
-        <h2 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-4">CODE</h2>
+      <div className="w-1/2 flex flex-col border-r border-border bg-bg-elevated">
+        {/* Header */}
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between shrink-0">
+          <h2 className="text-sm font-medium text-text">Code</h2>
+          {step && (
+            <span className="text-xs text-primary">Line {step.line}</span>
+          )}
+        </div>
 
         {/* Code Editor */}
-        <div className="flex-1 flex border border-[#252525] overflow-hidden min-h-0">
-          {/* Line Numbers */}
+        <div className="flex-1 flex overflow-hidden min-h-0">
+          {/* Line Numbers - 줄 사이에 배치 */}
           <div
             ref={lineNumbersRef}
-            className="bg-[#111] text-neutral-600 font-mono text-sm py-3 select-none overflow-hidden border-r border-[#252525]"
-            style={{ minWidth: '3rem' }}
+            className="bg-bg text-text-tertiary font-mono text-sm select-none overflow-hidden border-r border-border"
+            style={{ minWidth: '3.5rem' }}
           >
             {lines.map((_, idx) => {
               const lineNum = idx + 1;
@@ -69,34 +75,33 @@ export function MemoryViz() {
               return (
                 <div
                   key={idx}
-                  className={`px-2 text-right leading-6 ${
-                    isCurrentLine ? 'bg-white/10 text-white' : ''
-                  }`}
+                  className="relative h-7 flex items-center justify-end pr-3"
+                  style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
                 >
-                  {lineNum}
+                  <span className={`text-xs ${isCurrentLine ? 'text-primary font-medium' : ''}`}>
+                    {lineNum}
+                  </span>
                 </div>
               );
             })}
           </div>
 
           {/* Code Area */}
-          <div className="flex-1 relative bg-[#0a0a0a]">
+          <div className="flex-1 relative bg-bg">
             {/* Highlight Layer */}
-            <div className="absolute inset-0 py-3 font-mono text-sm z-20 pointer-events-none">
+            <div className="absolute inset-0 font-mono text-sm z-10 pointer-events-none">
               {lines.map((_, idx) => {
                 const lineNum = idx + 1;
                 const isCurrentLine = step && step.line === lineNum;
                 return (
                   <div
                     key={idx}
-                    className={`px-3 leading-6 ${
-                      isCurrentLine ? 'bg-white/10 border-l-2 border-white' : ''
-                    }`}
+                    className={`h-7 px-4 flex items-center ${isCurrentLine ? 'bg-primary/10 border-l-2 border-primary' : ''}`}
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
                   >
                     {isCurrentLine && (
-                      <span className="font-title absolute right-3 text-neutral-500 text-xs tracking-wide">CURRENT</span>
+                      <span className="absolute right-4 text-primary text-xs font-medium">CURRENT</span>
                     )}
-                    &nbsp;
                   </div>
                 );
               })}
@@ -107,67 +112,71 @@ export function MemoryViz() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onScroll={handleScroll}
-              className="w-full h-full bg-transparent font-mono text-sm p-3 resize-none focus:outline-none leading-6 relative z-10 text-neutral-300"
+              className="w-full h-full bg-transparent font-mono text-sm px-4 resize-none focus:outline-none relative z-20 text-text"
               placeholder="Enter C code..."
               spellCheck={false}
+              style={{ lineHeight: '1.75rem' }}
             />
           </div>
         </div>
 
-        {/* Stdin */}
-        <div className="mt-3">
-          <label className="text-neutral-500 text-[10px] mb-1 block">입력 (stdin)</label>
-          <textarea
-            value={stdin}
-            onChange={(e) => setStdin(e.target.value)}
-            placeholder="예: 3 5"
-            className="w-full h-10 bg-[#1a1a1a] rounded-lg font-mono text-xs p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#3182f6] text-white placeholder-neutral-600"
-          />
-        </div>
+        {/* Stdin & Controls */}
+        <div className="px-5 py-4 border-t border-border bg-bg-elevated shrink-0">
+          {/* Stdin */}
+          <div className="mb-3">
+            <label className="text-text-tertiary text-xs font-medium mb-1.5 block">Input (stdin)</label>
+            <input
+              type="text"
+              value={stdin}
+              onChange={(e) => setStdin(e.target.value)}
+              placeholder="e.g., 3 5"
+              className="w-full bg-bg border border-border rounded-lg font-mono text-sm px-3 py-2 text-text placeholder-text-muted focus:outline-none focus:border-primary"
+            />
+          </div>
 
-        {/* Controls */}
-        <div className="mt-3 flex items-center gap-3">
-          <button
-            onClick={handleTrace}
-            disabled={isLoading}
-            className="text-[11px] rounded-full text-white disabled:opacity-40"
-            style={{ padding: '8px 18px', backgroundColor: '#3182f6' }}
-          >
-            {isLoading ? '분석중...' : '분석'}
-          </button>
+          {/* Controls */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleTrace}
+              disabled={isLoading}
+              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-50 transition-colors"
+            >
+              {isLoading ? 'Analyzing...' : 'Analyze'}
+            </button>
 
-          {steps.length > 0 && (
-            <>
-              <button
-                onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-                disabled={currentStep === 0}
-                className="text-[11px] rounded-full hover:text-white disabled:opacity-30"
-                style={{ padding: '8px 16px', backgroundColor: '#252530', color: '#999' }}
-              >
-                이전
-              </button>
-              <span className="text-neutral-500 text-[11px] min-w-[50px] text-center">
-                {currentStep + 1} / {steps.length}
-              </span>
-              <button
-                onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
-                disabled={currentStep === steps.length - 1}
-                className="text-[11px] rounded-full hover:text-white disabled:opacity-30"
-                style={{ padding: '8px 16px', backgroundColor: '#252530', color: '#999' }}
-              >
-                다음
-              </button>
-            </>
+            {steps.length > 0 && (
+              <>
+                <button
+                  onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                  disabled={currentStep === 0}
+                  className="px-3 py-2 bg-bg-tertiary text-text-secondary text-sm font-medium rounded-lg hover:bg-bg-hover disabled:opacity-40 transition-colors"
+                >
+                  Prev
+                </button>
+                <span className="text-text-secondary text-sm min-w-[50px] text-center">
+                  {currentStep + 1} / {steps.length}
+                </span>
+                <button
+                  onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
+                  disabled={currentStep === steps.length - 1}
+                  className="px-3 py-2 bg-bg-tertiary text-text-secondary text-sm font-medium rounded-lg hover:bg-bg-hover disabled:opacity-40 transition-colors"
+                >
+                  Next
+                </button>
+              </>
+            )}
+          </div>
+
+          {error && (
+            <p className="mt-3 text-danger text-sm bg-danger/10 px-3 py-2 rounded-lg">{error}</p>
           )}
         </div>
 
-        {error && <p className="font-body mt-3 text-neutral-500 text-sm">{error}</p>}
-
         {/* Explanation */}
         {step && step.explanation && (
-          <div className="mt-4 border border-[#252525] p-4 max-h-[25%] overflow-auto">
-            <h3 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-3">EXPLANATION</h3>
-            <pre className="font-body text-sm text-neutral-400 whitespace-pre-wrap leading-relaxed">
+          <div className="px-5 py-4 border-t border-border bg-info/5 max-h-32 overflow-auto shrink-0">
+            <h3 className="text-xs font-medium text-info mb-2">Explanation</h3>
+            <pre className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">
               {step.explanation}
             </pre>
           </div>
@@ -175,18 +184,29 @@ export function MemoryViz() {
       </div>
 
       {/* Right: Memory Visualization */}
-      <div className="w-1/2 px-8 py-6 overflow-auto">
-        <h2 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-4">MEMORY</h2>
+      <div className="w-1/2 flex flex-col bg-bg">
+        {/* Header */}
+        <div className="px-5 py-3 border-b border-border shrink-0">
+          <h2 className="text-sm font-medium text-text">Memory</h2>
+        </div>
 
-        {!step ? (
-          <div className="h-full flex flex-col items-center justify-center">
-            <p className="font-body text-neutral-600 text-sm tracking-wide">Run trace to visualize memory</p>
-          </div>
-        ) : (
-          <Xwrapper>
-            <MemoryGrid stack={step.stack || []} heap={step.heap || []} />
-          </Xwrapper>
-        )}
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-5">
+          {!step ? (
+            <div className="h-full flex flex-col items-center justify-center">
+              <div className="w-14 h-14 rounded-xl bg-primary/15 flex items-center justify-center mb-4">
+                <svg width="28" height="28" className="text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+              </div>
+              <p className="text-text-secondary text-sm">Run trace to visualize memory</p>
+            </div>
+          ) : (
+            <Xwrapper>
+              <MemoryGrid stack={step.stack || []} heap={step.heap || []} />
+            </Xwrapper>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -209,66 +229,56 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Memory Container */}
-      <div className="border border-[#252525] p-6">
-        <div className="font-title text-center text-neutral-600 text-xs tracking-[0.2em] mb-6">
-          VIRTUAL MEMORY
+      <div className="border border-border rounded-xl p-5 bg-bg-elevated">
+        <div className="text-center text-text-tertiary text-xs font-medium uppercase tracking-wider mb-5">
+          Virtual Memory
         </div>
 
         {/* STACK */}
-        <div className="mb-6">
+        <div className="mb-5">
           <div className="flex items-center gap-3 mb-3">
-            <span className="font-title text-xs tracking-[0.2em] text-neutral-400">STACK</span>
-            <span className="font-body text-neutral-600 text-xs">high → low</span>
+            <span className="text-xs font-medium text-text">Stack</span>
+            <span className="text-text-muted text-xs">high → low</span>
           </div>
 
           {stack.length === 0 ? (
-            <div className="font-title border border-dashed border-[#252525] p-4 text-center text-neutral-600 text-xs">
+            <div className="border border-dashed border-border rounded-lg p-4 text-center text-text-muted text-xs">
               EMPTY
             </div>
           ) : (
-            <div className="border border-[#252525] p-4">
-              <div className="grid grid-cols-4 gap-3">
-                {stack.map((block) => (
-                  <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
-                ))}
-                {stack.length < 4 && Array.from({ length: 4 - stack.length }).map((_, i) => (
-                  <EmptyCell key={`empty-stack-${i}`} />
-                ))}
-              </div>
+            <div className="grid grid-cols-4 gap-2">
+              {stack.map((block) => (
+                <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
+              ))}
             </div>
           )}
         </div>
 
         {/* Separator */}
-        <div className="flex items-center justify-center my-4">
-          <div className="flex-1 border-t border-dashed border-[#252525]"></div>
-          <span className="font-title px-4 text-neutral-700 text-xs tracking-wide">FREE SPACE</span>
-          <div className="flex-1 border-t border-dashed border-[#252525]"></div>
+        <div className="flex items-center justify-center my-5">
+          <div className="flex-1 border-t border-dashed border-border"></div>
+          <span className="px-4 text-text-muted text-xs">FREE</span>
+          <div className="flex-1 border-t border-dashed border-border"></div>
         </div>
 
         {/* HEAP */}
         <div>
           <div className="flex items-center gap-3 mb-3">
-            <span className="font-title text-xs tracking-[0.2em] text-neutral-400">HEAP</span>
-            <span className="font-body text-neutral-600 text-xs">low → high</span>
+            <span className="text-xs font-medium text-text">Heap</span>
+            <span className="text-text-muted text-xs">low → high</span>
           </div>
 
           {heap.length === 0 ? (
-            <div className="font-title border border-dashed border-[#252525] p-4 text-center text-neutral-600 text-xs">
+            <div className="border border-dashed border-border rounded-lg p-4 text-center text-text-muted text-xs">
               EMPTY (before malloc)
             </div>
           ) : (
-            <div className="border border-[#252525] p-4">
-              <div className="grid grid-cols-4 gap-3">
-                {heap.map((block) => (
-                  <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
-                ))}
-                {heap.length < 4 && Array.from({ length: 4 - heap.length }).map((_, i) => (
-                  <EmptyCell key={`empty-heap-${i}`} />
-                ))}
-              </div>
+            <div className="grid grid-cols-4 gap-2">
+              {heap.map((block) => (
+                <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
+              ))}
             </div>
           )}
         </div>
@@ -280,8 +290,8 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
           key={idx}
           start={conn.from}
           end={conn.to}
-          color="#ffffff"
-          strokeWidth={1}
+          color="#6366f1"
+          strokeWidth={2}
           headSize={4}
           curveness={0.5}
           dashness={false}
@@ -290,24 +300,24 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
       ))}
 
       {/* Legend */}
-      <div className="border border-[#252525] p-4">
-        <div className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-3">LEGEND</div>
+      <div className="border border-border rounded-xl p-4 bg-bg-elevated">
+        <div className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-3">Legend</div>
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 border border-neutral-500"></div>
-            <span className="font-body text-neutral-400">Stack variable</span>
+            <div className="w-4 h-4 border border-border rounded bg-bg-tertiary"></div>
+            <span className="text-text-secondary">Stack variable</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 border border-neutral-600 bg-neutral-800"></div>
-            <span className="font-body text-neutral-400">Heap memory</span>
+            <div className="w-4 h-4 border-2 border-primary rounded"></div>
+            <span className="text-text-secondary">Pointer</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 border-2 border-white"></div>
-            <span className="font-body text-neutral-400">Pointer</span>
+            <div className="w-4 h-4 border border-border rounded bg-bg"></div>
+            <span className="text-text-secondary">Heap memory</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-0 border-t border-white"></div>
-            <span className="font-body text-neutral-400">Points to</span>
+            <div className="w-6 h-0 border-t-2 border-primary"></div>
+            <span className="text-text-secondary">Points to</span>
           </div>
         </div>
       </div>
@@ -324,41 +334,33 @@ function MemoryCell({ block, allBlocks }: { block: MemoryBlock; allBlocks: Memor
   return (
     <div
       id={`block-${block.address}`}
-      className={`border p-3 text-center transition-all hover:border-white ${
-        isPointer ? 'border-white border-2' : 'border-[#252525]'
+      className={`border rounded-lg p-3 text-center transition-all bg-bg-tertiary ${
+        isPointer ? 'border-primary border-2' : 'border-border hover:border-primary/50'
       }`}
     >
       {/* Variable Name */}
-      <div className="font-mono text-white text-sm truncate" title={block.name}>
+      <div className="font-mono text-text text-sm font-medium truncate" title={block.name}>
         {block.name}
       </div>
 
       {/* Value */}
-      <div className="text-lg font-light text-white my-2">
+      <div className="text-lg font-medium text-primary my-1.5">
         {isPointer && pointsToBlock ? (
-          <span className="text-neutral-400 text-sm">→ {pointsToBlock.name}</span>
+          <span className="text-info text-sm">→ {pointsToBlock.name}</span>
         ) : isPointer && block.points_to ? (
-          <span className="text-neutral-500 text-xs font-mono">{block.points_to}</span>
+          <span className="text-text-muted text-xs font-mono">{block.points_to}</span>
         ) : (
           block.value
         )}
       </div>
 
       {/* Address */}
-      <div className="text-xs text-neutral-600 font-mono truncate" title={block.address}>
+      <div className="text-xs text-text-muted font-mono truncate" title={block.address}>
         {formatAddress(block.address)}
       </div>
 
       {/* Type */}
-      <div className="text-xs text-neutral-500 mt-1">{block.type}</div>
-    </div>
-  );
-}
-
-function EmptyCell() {
-  return (
-    <div className="border border-dashed border-[#252525] p-3 text-center">
-      <div className="text-neutral-700 text-xs">-</div>
+      <div className="text-xs text-text-tertiary mt-1">{block.type}</div>
     </div>
   );
 }

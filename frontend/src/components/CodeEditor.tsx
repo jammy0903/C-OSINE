@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../stores/store';
-import { runCode, runTestCases, type TestCaseResult } from '../services/judge0';
+import { runCode, runTestCases, type TestCaseResult } from '../services/crunner';
 import { createSubmission } from '../services/submissions';
 import CodeMirror from '@uiw/react-codemirror';
 import { cpp } from '@codemirror/lang-cpp';
@@ -94,47 +94,43 @@ int main() {
   };
 
   return (
-    <div className="flex h-full bg-[#161618] overflow-hidden">
+    <div className="flex h-full bg-bg rounded-xl overflow-hidden">
       {/* Problem Panel */}
       {selectedProblem && (
-        <div className="w-1/2 flex flex-col border-r border-[#1a1a1a] min-w-0">
+        <div className="w-1/2 flex flex-col border-r border-border min-w-0 bg-bg-elevated">
           {/* Problem Header */}
-          <div className="px-4 py-3 border-b border-[#1a1a1a] flex items-center justify-between">
+          <div className="px-5 py-3 border-b border-border flex items-center justify-between shrink-0">
             <div className="min-w-0">
-              <span className="text-neutral-600 text-[10px]">#{selectedProblem.number}</span>
-              <h2 className="text-base font-light text-white truncate">{selectedProblem.title}</h2>
+              <span className="text-text-tertiary text-xs font-mono">#{selectedProblem.number}</span>
+              <h2 className="text-sm font-medium text-text truncate">{selectedProblem.title}</h2>
             </div>
             <button
               onClick={handleClose}
-              className="text-[10px] text-neutral-500 hover:text-white ml-2 shrink-0"
+              className="text-xs text-text-tertiary hover:text-text-secondary transition-colors px-2 py-1 rounded hover:bg-bg-hover"
             >
-              닫기
+              Close
             </button>
           </div>
 
           {/* Problem Description */}
-          <div className="flex-1 overflow-y-auto px-8 py-6">
-            <pre className="font-body whitespace-pre-wrap text-neutral-400 leading-relaxed text-sm">
+          <div className="flex-1 overflow-y-auto px-5 py-4">
+            <pre className="whitespace-pre-wrap text-text-secondary leading-relaxed text-sm">
               {selectedProblem.description}
             </pre>
 
             {/* Test Cases */}
             {selectedProblem.testCases && selectedProblem.testCases.length > 0 && (
-              <div className="mt-8">
-                <h3 className="font-title text-xs tracking-[0.2em] text-neutral-500 mb-4 uppercase">TEST CASES</h3>
+              <div className="mt-6">
+                <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-3">Test Cases</h3>
                 {selectedProblem.testCases.map((tc, i) => (
-                  <div key={i} className="mb-4 border border-[#252525] p-4">
-                    <div className="mb-3">
-                      <span className="font-title text-neutral-600 text-xs tracking-wide">INPUT</span>
-                      <pre className="mt-2 p-3 bg-[#111] text-neutral-300 font-mono text-sm">
-                        {tc.input || '(none)'}
-                      </pre>
+                  <div key={i} className="mb-3 border border-border rounded-lg overflow-hidden">
+                    <div className="p-3 border-b border-border bg-bg">
+                      <span className="text-text-muted text-xs">Input</span>
+                      <pre className="mt-1.5 text-text font-mono text-sm">{tc.input || '(none)'}</pre>
                     </div>
-                    <div>
-                      <span className="font-title text-neutral-600 text-xs tracking-wide">OUTPUT</span>
-                      <pre className="mt-2 p-3 bg-[#111] text-neutral-300 font-mono text-sm">
-                        {tc.output}
-                      </pre>
+                    <div className="p-3 bg-bg">
+                      <span className="text-text-muted text-xs">Output</span>
+                      <pre className="mt-1.5 text-text font-mono text-sm">{tc.output}</pre>
                     </div>
                   </div>
                 ))}
@@ -147,7 +143,7 @@ int main() {
       {/* Code Editor Area */}
       <div className={`flex flex-col ${selectedProblem ? 'w-1/2' : 'w-full'}`}>
         {/* Editor */}
-        <div className={`${isTerminalOpen ? 'h-1/2' : 'flex-1'} overflow-auto border-b border-[#252525]`}>
+        <div className={`${isTerminalOpen ? 'h-1/2' : 'flex-1'} overflow-auto border-b border-border`}>
           <CodeMirror
             value={code}
             onChange={setCode}
@@ -164,71 +160,69 @@ int main() {
         </div>
 
         {/* Toolbar */}
-        <div className="px-4 py-3 bg-[#111] border-t border-[#1a1a1a] shrink-0">
+        <div className="px-5 py-3 bg-bg-elevated border-t border-border shrink-0">
           {/* Stdin */}
           <div className="mb-3">
-            <label className="text-neutral-500 text-[10px] mb-1 block">입력 (stdin)</label>
-            <textarea
+            <label className="text-text-tertiary text-xs font-medium mb-1.5 block">Input (stdin)</label>
+            <input
+              type="text"
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
-              placeholder="scanf 입력값..."
-              className="w-full h-10 bg-[#1a1a1a] rounded-lg font-mono text-xs p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#3182f6] placeholder-neutral-600 text-white"
+              placeholder="e.g., 3 5"
+              className="w-full bg-bg border border-border rounded-lg font-mono text-sm px-3 py-2 text-text placeholder-text-muted focus:outline-none focus:border-primary"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={handleRun}
               disabled={isRunning || isJudging}
-              className="text-[11px] rounded-full text-white disabled:opacity-40"
-              style={{ padding: '8px 18px', backgroundColor: '#3182f6' }}
+              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-50 transition-colors"
             >
-              {isRunning ? '실행중...' : '실행'}
+              {isRunning ? 'Running...' : 'Run'}
             </button>
 
             {selectedProblem && (
               <button
                 onClick={handleJudge}
                 disabled={isRunning || isJudging}
-                className="text-[11px] rounded-full text-white disabled:opacity-40"
-                style={{ padding: '8px 18px', backgroundColor: '#20c997' }}
+                className="px-4 py-2 bg-success text-white text-sm font-medium rounded-lg hover:bg-success-dark disabled:opacity-50 transition-colors"
               >
-                {isJudging ? '채점중...' : '채점'}
+                {isJudging ? 'Judging...' : 'Judge'}
               </button>
             )}
 
             <button
               onClick={handleReset}
-              className="text-[11px] rounded-full hover:text-white"
-              style={{ padding: '8px 16px', backgroundColor: '#252530', color: '#999' }}
+              className="px-3 py-2 bg-bg-tertiary text-text-secondary text-sm font-medium rounded-lg hover:bg-bg-hover transition-colors"
             >
-              초기화
+              Reset
             </button>
 
             <div className="flex-1" />
 
             <button
               onClick={() => setIsTerminalOpen(!isTerminalOpen)}
-              className="text-[10px] text-neutral-500 hover:text-white"
+              className="text-xs text-text-tertiary hover:text-text-secondary transition-colors"
             >
-              {isTerminalOpen ? '출력 숨기기' : '출력 보기'}
+              {isTerminalOpen ? 'Hide Output' : 'Show Output'}
             </button>
           </div>
         </div>
 
         {/* Output */}
         {isTerminalOpen && (
-          <div className="h-1/2 overflow-y-auto bg-[#0a0a0a] px-6 py-4">
+          <div className="h-1/2 overflow-y-auto bg-bg px-5 py-4">
             {/* Judge Results */}
             {judgeResults && (
               <div className="mb-4">
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="font-title text-xs tracking-[0.2em] text-neutral-500">RESULT</span>
-                  <span className={`font-title text-sm tracking-wide ${judgeResults.allPassed ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider">Result</span>
+                  <span className={`text-sm font-semibold ${judgeResults.allPassed ? 'text-success' : 'text-danger'}`}>
                     {judgeResults.allPassed ? 'ACCEPTED' : 'WRONG ANSWER'}
                   </span>
-                  <span className="text-neutral-600 text-xs">
+                  <span className="text-text-muted text-xs">
                     {judgeResults.passedCount}/{judgeResults.totalCount}
                   </span>
                 </div>
@@ -237,28 +231,28 @@ int main() {
                   {judgeResults.results.map((tc, i) => (
                     <div
                       key={i}
-                      className={`p-4 border ${tc.passed ? 'border-[#4ade80]/30 bg-[#4ade80]/5' : 'border-[#f87171]/30 bg-[#f87171]/5'}`}
+                      className={`p-3 rounded-lg border ${tc.passed ? 'border-success/30 bg-success/5' : 'border-danger/30 bg-danger/5'}`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`font-title text-xs tracking-wide ${tc.passed ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>
-                          TEST {i + 1}: {tc.passed ? 'PASS' : 'FAIL'}
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-sm font-medium ${tc.passed ? 'text-success' : 'text-danger'}`}>
+                          Test {i + 1}: {tc.passed ? 'PASS' : 'FAIL'}
                         </span>
-                        {tc.time && <span className="text-neutral-600 text-xs">{tc.time}</span>}
+                        {tc.time && <span className="text-text-muted text-xs">{tc.time}</span>}
                       </div>
 
                       {!tc.passed && (
-                        <div className="text-sm space-y-2 mt-3">
-                          <div className="flex gap-4">
-                            <span className="font-title text-neutral-600 text-xs w-16">INPUT</span>
-                            <code className="text-neutral-400">{tc.input || '(none)'}</code>
+                        <div className="text-sm space-y-1 mt-2">
+                          <div className="flex gap-3">
+                            <span className="text-text-muted text-xs w-16">Input</span>
+                            <code className="text-text font-mono text-xs">{tc.input || '(none)'}</code>
                           </div>
-                          <div className="flex gap-4">
-                            <span className="font-title text-neutral-600 text-xs w-16">EXPECTED</span>
-                            <code className="text-[#4ade80]">{tc.expected}</code>
+                          <div className="flex gap-3">
+                            <span className="text-text-muted text-xs w-16">Expected</span>
+                            <code className="text-success font-mono text-xs">{tc.expected}</code>
                           </div>
-                          <div className="flex gap-4">
-                            <span className="font-title text-neutral-600 text-xs w-16">ACTUAL</span>
-                            <code className="text-[#f87171]">{tc.actual}</code>
+                          <div className="flex gap-3">
+                            <span className="text-text-muted text-xs w-16">Actual</span>
+                            <code className="text-danger font-mono text-xs">{tc.actual}</code>
                           </div>
                         </div>
                       )}
@@ -271,23 +265,23 @@ int main() {
             {/* Run Result */}
             {!judgeResults && (
               <>
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="font-title text-xs tracking-[0.2em] text-neutral-500">OUTPUT</span>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider">Output</span>
                   {result && (
-                    <span className={`font-title text-xs tracking-wide ${result.success ? 'text-[#4ade80]' : 'text-[#f87171]'}`}>
+                    <span className={`text-xs font-medium ${result.success ? 'text-success' : 'text-danger'}`}>
                       {result.success ? 'SUCCESS' : 'ERROR'}
                     </span>
                   )}
-                  {result?.time && <span className="text-neutral-600 text-xs">{result.time}</span>}
+                  {result?.time && <span className="text-text-muted text-xs">{result.time}</span>}
                 </div>
 
                 {result ? (
-                  <pre className="font-mono text-sm whitespace-pre-wrap text-neutral-300 leading-relaxed">
+                  <pre className="font-mono text-sm whitespace-pre-wrap text-text-secondary leading-relaxed p-3 bg-bg-elevated rounded-lg border border-border">
                     {result.output}
                   </pre>
                 ) : (
-                  <p className="font-body text-neutral-600 text-sm tracking-wide">
-                    {isRunning ? 'Running...' : isJudging ? 'Judging...' : '실행 버튼을 눌러 코드를 실행하세요.'}
+                  <p className="text-text-muted text-sm">
+                    {isRunning ? 'Running...' : isJudging ? 'Judging...' : 'Click Run to execute your code.'}
                   </p>
                 )}
               </>

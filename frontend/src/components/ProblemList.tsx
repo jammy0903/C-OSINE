@@ -4,24 +4,27 @@ import { loadProblems } from '../services/problems';
 import type { Problem } from '../types';
 
 // Tag color mapping
-const TAG_COLORS: Record<string, string> = {
-  '구현': '#a78bfa', '시뮬레이션': '#a78bfa',
-  '브루트포스': '#ef4444', '완전탐색': '#ef4444',
-  '수학': '#fbbf24', '산수': '#fbbf24', '기하': '#fbbf24', '기하학': '#fbbf24', '정수론': '#fbbf24',
-  '문자열': '#34d399', '파싱': '#34d399',
-  '자료구조': '#60a5fa', '배열': '#60a5fa', '스택': '#60a5fa', '큐': '#60a5fa', '해시': '#60a5fa', '트리': '#60a5fa',
-  '정렬': '#fb923c',
-  '탐색': '#f472b6', '이분탐색': '#f472b6', '이진탐색': '#f472b6',
-  '그래프': '#2dd4bf', 'bfs': '#2dd4bf', 'dfs': '#2dd4bf',
-  'dp': '#818cf8', '다이나믹': '#818cf8', '동적계획': '#818cf8',
-  '그리디': '#a3e635', '탐욕': '#a3e635',
-  '입출력': '#9ca3af', '조건문': '#9ca3af', '반복문': '#9ca3af', '사칙연산': '#9ca3af',
-  '재귀': '#ec4899', '분할정복': '#ec4899', '백트래킹': '#ec4899',
+const TAG_COLORS: Record<string, { bg: string; text: string }> = {
+  '구현': { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' },
+  '시뮬레이션': { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' },
+  '브루트포스': { bg: 'rgba(248, 113, 113, 0.15)', text: '#f87171' },
+  '완전탐색': { bg: 'rgba(248, 113, 113, 0.15)', text: '#f87171' },
+  '수학': { bg: 'rgba(251, 191, 36, 0.15)', text: '#fbbf24' },
+  '문자열': { bg: 'rgba(52, 211, 153, 0.15)', text: '#34d399' },
+  '자료구조': { bg: 'rgba(34, 211, 238, 0.15)', text: '#22d3ee' },
+  '정렬': { bg: 'rgba(251, 146, 60, 0.15)', text: '#fb923c' },
+  '탐색': { bg: 'rgba(244, 114, 182, 0.15)', text: '#f472b6' },
+  'dp': { bg: 'rgba(167, 139, 250, 0.15)', text: '#a78bfa' },
+  '그리디': { bg: 'rgba(163, 230, 53, 0.15)', text: '#a3e635' },
+  '그래프': { bg: 'rgba(45, 212, 191, 0.15)', text: '#2dd4bf' },
 };
 
-const FALLBACK_COLORS = ['#8b5cf6', '#0ea5e9', '#a855f7', '#22c55e', '#f97316'];
+const FALLBACK_COLORS = [
+  { bg: 'rgba(139, 92, 246, 0.15)', text: '#8b5cf6' },
+  { bg: 'rgba(14, 165, 233, 0.15)', text: '#0ea5e9' },
+];
 
-function getTagColor(tag: string, index: number): string {
+function getTagColor(tag: string, index: number) {
   const lowerTag = tag.toLowerCase();
   for (const [key, value] of Object.entries(TAG_COLORS)) {
     if (lowerTag.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerTag)) {
@@ -31,30 +34,22 @@ function getTagColor(tag: string, index: number): string {
   return FALLBACK_COLORS[index % FALLBACK_COLORS.length];
 }
 
-// Difficulty levels with colors (iOS-style hierarchy)
-const DIFFICULTY_LEVELS = [
-  { id: 'bronze', label: 'Bronze', color: '#cd7f32' },
-  { id: 'silver', label: 'Silver', color: '#c0c0c0' },
-  { id: 'gold', label: 'Gold', color: '#ffd700' },
-  { id: 'platinum', label: 'Platinum', color: '#4ade80' },
-  { id: 'diamond', label: 'Diamond', color: '#60a5fa' },
-];
+// Difficulty config
+const DIFFICULTY_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
+  bronze: { color: '#d97706', bg: 'rgba(217, 119, 6, 0.15)', label: 'Bronze' },
+  silver: { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.15)', label: 'Silver' },
+  gold: { color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)', label: 'Gold' },
+  platinum: { color: '#34d399', bg: 'rgba(52, 211, 153, 0.15)', label: 'Platinum' },
+  diamond: { color: '#22d3ee', bg: 'rgba(34, 211, 238, 0.15)', label: 'Diamond' },
+  ruby: { color: '#f87171', bg: 'rgba(248, 113, 113, 0.15)', label: 'Ruby' },
+};
 
-// Common tags for filter
-const COMMON_TAGS = ['구현', '수학', '문자열', '자료구조', '정렬', '탐색', 'dp', '그리디', '그래프'];
-
-function getDifficultyStyle(diff: string): { color: string; label: string } {
+function getDifficultyInfo(diff: string) {
   const lower = diff.toLowerCase();
-  if (lower.includes('bronze') || lower.includes('브론즈')) return { color: '#cd7f32', label: diff };
-  if (lower.includes('silver') || lower.includes('실버')) return { color: '#c0c0c0', label: diff };
-  if (lower.includes('gold') || lower.includes('골드')) return { color: '#ffd700', label: diff };
-  if (lower.includes('platinum') || lower.includes('플래티넘')) return { color: '#4ade80', label: diff };
-  if (lower.includes('diamond') || lower.includes('다이아')) return { color: '#60a5fa', label: diff };
-  if (lower.includes('ruby') || lower.includes('루비')) return { color: '#ef4444', label: diff };
-  if (lower.includes('easy') || lower.includes('쉬움') || lower === '1' || lower === '2') return { color: '#4ade80', label: diff };
-  if (lower.includes('medium') || lower.includes('보통') || lower === '3' || lower === '4') return { color: '#fbbf24', label: diff };
-  if (lower.includes('hard') || lower.includes('어려움') || lower === '5') return { color: '#ef4444', label: diff };
-  return { color: '#737373', label: diff };
+  for (const [key, value] of Object.entries(DIFFICULTY_CONFIG)) {
+    if (lower.includes(key)) return value;
+  }
+  return { color: '#a1a1a6', bg: 'rgba(161, 161, 166, 0.15)', label: diff };
 }
 
 export function ProblemList() {
@@ -62,11 +57,7 @@ export function ProblemList() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-
-  // Filter states
-  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
 
   useEffect(() => {
     loadProblems()
@@ -74,256 +65,221 @@ export function ProblemList() {
       .finally(() => setLoading(false));
   }, []);
 
+  const stats = {
+    total: problems.length,
+    solved: solvedProblems.length,
+    attempted: attemptedProblems.length,
+    remaining: problems.length - solvedProblems.length,
+  };
+
+  const filteredProblems = problems.filter((p) => {
+    const matchesSearch = search === '' ||
+      p.title.toLowerCase().includes(search.toLowerCase()) ||
+      p.number.toString().includes(search) ||
+      p.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
+    const matchesDifficulty = !selectedDifficulty ||
+      p.difficulty.toLowerCase().includes(selectedDifficulty);
+    return matchesSearch && matchesDifficulty;
+  });
+
   const getUserStatus = (problemId: string): 'solved' | 'attempted' | null => {
     if (solvedProblems.includes(problemId)) return 'solved';
     if (attemptedProblems.includes(problemId)) return 'attempted';
     return null;
   };
 
-  const toggleLevel = (levelId: string) => {
-    setSelectedLevels(prev =>
-      prev.includes(levelId)
-        ? prev.filter(l => l !== levelId)
-        : [...prev, levelId]
-    );
-  };
-
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag)
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
-  };
-
-  const clearFilters = () => {
-    setSelectedLevels([]);
-    setSelectedTags([]);
-    setSearch('');
-  };
-
-  const hasActiveFilters = selectedLevels.length > 0 || selectedTags.length > 0 || search.length > 0;
-
-  const filteredProblems = problems.filter((p) => {
-    // Search filter
-    const matchesSearch = search === '' ||
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.number.toString().includes(search) ||
-      p.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
-
-    // Level filter
-    const matchesLevel = selectedLevels.length === 0 ||
-      selectedLevels.some(level => p.difficulty.toLowerCase().includes(level));
-
-    // Tag filter
-    const matchesTags = selectedTags.length === 0 ||
-      selectedTags.some(tag =>
-        p.tags.some(pTag => pTag.toLowerCase().includes(tag.toLowerCase()))
-      );
-
-    return matchesSearch && matchesLevel && matchesTags;
-  });
-
   return (
-    <div className="h-full flex flex-col bg-[#161618] overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-2.5 border-b border-[#1a1a1a]">
-        {/* Title Row */}
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-title text-lg tracking-[0.15em] text-white">PROBLEMS</h2>
+    <div className="h-full flex flex-col gap-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-3 shrink-0">
+        <StatCard title="Total" value={stats.total} color="primary" />
+        <StatCard title="Solved" value={stats.solved} color="success" percent={stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0} />
+        <StatCard title="Attempted" value={stats.attempted} color="warning" />
+        <StatCard title="Remaining" value={stats.remaining} color="info" />
+      </div>
+
+      {/* Table Card */}
+      <div className="flex-1 bg-bg-elevated rounded-xl overflow-hidden flex flex-col min-h-0">
+        {/* Table Header */}
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
-            {hasActiveFilters && (
-              <button onClick={clearFilters} className="font-title text-[0.6rem] tracking-[0.15em] text-neutral-600 hover:text-white">
-                CLEAR
-              </button>
-            )}
-            {/* Filter Toggle */}
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex items-center gap-1.5 font-title text-[0.6rem] tracking-[0.15em] ${isFilterOpen || hasActiveFilters ? 'text-white' : 'text-neutral-600'}`}
-            >
-              FILTER
-              {hasActiveFilters && <span className="w-1 h-1 rounded-full bg-white" />}
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={isFilterOpen ? 'rotate-180' : ''}>
-                <path d="m6 9 6 6 6-6"/>
+            <h3 className="text-sm font-medium text-text">Problems</h3>
+            <span className="text-xs text-text-tertiary">{filteredProblems.length} items</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Difficulty Filter */}
+            <div className="flex items-center gap-1 bg-bg rounded-lg p-1">
+              {['All', 'Bronze', 'Silver', 'Gold', 'Platinum'].map((diff) => (
+                <button
+                  key={diff}
+                  onClick={() => setSelectedDifficulty(diff === 'All' ? null : diff.toLowerCase())}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    (diff === 'All' && !selectedDifficulty) || selectedDifficulty === diff.toLowerCase()
+                      ? 'bg-primary text-white'
+                      : 'text-text-secondary hover:text-text hover:bg-bg-hover'
+                  }`}
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
+            {/* Search */}
+            <div className="relative">
+              <svg width="14" height="14" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 text-neutral-700">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-            </svg>
-          </div>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-5 py-1.5 bg-transparent border-b border-[#1a1a1a] placeholder-neutral-700 focus:outline-none focus:border-neutral-500 text-xs tracking-wide text-white"
-          />
-        </div>
-
-        {/* Filters */}
-        {isFilterOpen && (
-          <div className="pt-3 mt-3 border-t border-[#1a1a1a] space-y-3">
-            {/* Level Filter */}
-            <div>
-              <span className="text-[10px] text-neutral-500 mb-2 block">난이도</span>
-              <div className="flex flex-wrap gap-3">
-                {DIFFICULTY_LEVELS.map((level) => {
-                  const isSelected = selectedLevels.includes(level.id);
-                  return (
-                    <button
-                      key={level.id}
-                      onClick={() => toggleLevel(level.id)}
-                      className="rounded-full text-[11px]"
-                      style={{
-                        padding: '7px 14px',
-                        backgroundColor: isSelected ? level.color : '#252530',
-                        color: isSelected ? '#fff' : '#999'
-                      }}
-                    >
-                      {level.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Tag Filter */}
-            <div>
-              <span className="text-[10px] text-neutral-500 mb-2 block">태그</span>
-              <div className="flex flex-wrap gap-3">
-                {COMMON_TAGS.map((tag) => {
-                  const isSelected = selectedTags.includes(tag);
-                  const color = getTagColor(tag, 0);
-                  return (
-                    <button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className="rounded-full text-[11px]"
-                      style={{
-                        padding: '7px 14px',
-                        backgroundColor: isSelected ? color : '#252530',
-                        color: isSelected ? '#fff' : '#999'
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  );
-                })}
-              </div>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-44 bg-bg border border-border rounded-lg pl-9 pr-3 py-1.5 text-sm text-text placeholder-text-muted focus:outline-none focus:border-primary"
+              />
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Table Header */}
-      <div className="px-4 py-2 border-b border-[#1a1a1a] bg-[#080808]">
-        <div className="grid grid-cols-[24px_48px_1fr_minmax(0,0.8fr)_48px] gap-4 items-center">
-          <span className="text-neutral-600 text-[10px] text-center">ST</span>
-          <span className="text-neutral-600 text-[10px] text-center">NO</span>
-          <span className="text-neutral-600 text-[10px]">TITLE</span>
-          <span className="text-neutral-600 text-[10px]">TAGS</span>
-          <span className="text-neutral-600 text-[10px] text-center">LV</span>
         </div>
-      </div>
 
-      {/* Problem List - iOS: Depth with alternating rows */}
-      <div className="flex-1 overflow-y-auto">
+        {/* Table */}
         {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <span className="font-title text-neutral-600 text-sm tracking-widest">LOADING...</span>
-          </div>
-        ) : filteredProblems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <span className="font-title text-neutral-600 text-sm tracking-widest">NO RESULTS</span>
-            {hasActiveFilters && (
-              <button onClick={clearFilters} className="font-title text-xs tracking-widest text-neutral-500 hover:text-white">
-                Clear filters
-              </button>
-            )}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
           </div>
         ) : (
-          <div>
-            {filteredProblems.map((problem, idx) => {
-              const status = getUserStatus(problem.id);
-              const diffStyle = getDifficultyStyle(problem.difficulty);
-              return (
-                <div
-                  key={problem.id}
-                  onClick={() => selectProblem(problem)}
-                  className={`px-4 py-3 cursor-pointer border-b border-[#131313] hover:bg-[#151515] ${idx % 2 === 0 ? 'bg-[#0a0a0a]' : 'bg-[#0c0c0c]'}`}
-                >
-                  <div className="grid grid-cols-[24px_48px_1fr_minmax(0,0.8fr)_48px] gap-4 items-center">
-                    {/* Status */}
-                    <div className="text-center">
-                      {status === 'solved' && <span className="text-[#4ade80]">✓</span>}
-                      {status === 'attempted' && <span className="text-[#fbbf24]">○</span>}
-                      {!status && <span className="text-neutral-800">·</span>}
-                    </div>
-
-                    {/* Number */}
-                    <div className="text-center">
-                      <span className="font-mono text-neutral-500 text-xs">{problem.number}</span>
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-white text-xs font-light tracking-wide truncate">
-                      {problem.title}
-                    </h3>
-
-                    {/* Tags */}
-                    <div className="flex items-center gap-1 overflow-hidden min-w-0">
-                      {problem.tags.slice(0, 2).map((tag, i) => {
-                        const color = getTagColor(tag, i);
-                        return (
-                          <span
-                            key={i}
-                            className="text-[0.5rem] whitespace-nowrap rounded-full px-2 py-0.5 truncate"
-                            style={{ backgroundColor: `${color}20`, color }}
-                          >
-                            {tag}
+          <div className="flex-1 overflow-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-bg-elevated z-10">
+                <tr className="border-b border-border">
+                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-16">No.</th>
+                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-48">Title</th>
+                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider">Tags</th>
+                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-24">Level</th>
+                  <th className="text-center px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-20">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProblems.slice(0, 30).map((problem) => {
+                  const status = getUserStatus(problem.id);
+                  const diffInfo = getDifficultyInfo(problem.difficulty);
+                  return (
+                    <tr
+                      key={problem.id}
+                      onClick={() => selectProblem(problem)}
+                      className="border-b border-border-light hover:bg-bg-hover transition-colors cursor-pointer group"
+                    >
+                      {/* Number */}
+                      <td className="px-5 py-3">
+                        <span className="text-text-tertiary text-sm font-mono">{problem.number}</span>
+                      </td>
+                      {/* Title */}
+                      <td className="px-5 py-3">
+                        <span className="text-text font-medium text-sm group-hover:text-primary transition-colors">
+                          {problem.title}
+                        </span>
+                      </td>
+                      {/* Tags - 전체 나열 */}
+                      <td className="px-5 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {problem.tags.map((tag, i) => {
+                            const color = getTagColor(tag, i);
+                            return (
+                              <span
+                                key={i}
+                                className="px-2 py-0.5 rounded text-xs font-medium"
+                                style={{ backgroundColor: color.bg, color: color.text }}
+                              >
+                                {tag}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </td>
+                      {/* Difficulty */}
+                      <td className="px-5 py-3">
+                        <span
+                          className="px-2 py-0.5 rounded text-xs font-medium"
+                          style={{ backgroundColor: diffInfo.bg, color: diffInfo.color }}
+                        >
+                          {diffInfo.label}
+                        </span>
+                      </td>
+                      {/* Status - 아이콘만 */}
+                      <td className="px-5 py-3 text-center">
+                        {status === 'solved' ? (
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-success/15 text-success">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
                           </span>
-                        );
-                      })}
-                      {problem.tags.length > 2 && (
-                        <span className="text-neutral-600 text-[0.5rem]">+{problem.tags.length - 2}</span>
-                      )}
-                    </div>
+                        ) : status === 'attempted' ? (
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-warning/15 text-warning">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
+                            </svg>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-border-dark text-text-muted">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="8" strokeWidth={1.5} />
+                            </svg>
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
-                    {/* Difficulty */}
-                    <div className="text-center">
-                      <span
-                        className="text-xs font-mono tracking-wide"
-                        style={{ color: diffStyle.color }}
-                      >
-                        {diffStyle.label}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {filteredProblems.length === 0 && (
+              <div className="text-center py-12 text-text-secondary text-sm">
+                No problems found
+              </div>
+            )}
+
+            {/* Pagination hint */}
+            {filteredProblems.length > 30 && (
+              <div className="px-5 py-3 border-t border-border text-center">
+                <span className="text-xs text-text-tertiary">
+                  Showing 1-30 of {filteredProblems.length} problems
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>
+    </div>
+  );
+}
 
-      {/* Footer - Minimal */}
-      <div className="px-6 py-2 border-t border-[#1a1a1a] flex items-center justify-between">
-        <span className="font-title text-neutral-700 text-[0.6rem] tracking-[0.15em]">
-          {filteredProblems.length} / {problems.length}
-        </span>
-        {hasActiveFilters && (
-          <span className="font-title text-neutral-600 text-[0.6rem] tracking-wide">
-            {selectedLevels.length > 0 && `${selectedLevels.length}L`}
-            {selectedLevels.length > 0 && selectedTags.length > 0 && ' · '}
-            {selectedTags.length > 0 && `${selectedTags.length}T`}
-          </span>
+function StatCard({
+  title,
+  value,
+  color,
+  percent,
+}: {
+  title: string;
+  value: number;
+  color: 'primary' | 'success' | 'warning' | 'info';
+  percent?: number;
+}) {
+  const colorMap = {
+    primary: { bg: 'bg-primary/15', text: 'text-primary', border: 'border-primary/20' },
+    success: { bg: 'bg-success/15', text: 'text-success', border: 'border-success/20' },
+    warning: { bg: 'bg-warning/15', text: 'text-warning', border: 'border-warning/20' },
+    info: { bg: 'bg-info/15', text: 'text-info', border: 'border-info/20' },
+  };
+
+  const colors = colorMap[color];
+
+  return (
+    <div className={`${colors.bg} rounded-xl p-4 border ${colors.border}`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-text-secondary text-xs font-medium mb-1">{title}</p>
+          <p className={`text-2xl font-semibold ${colors.text}`}>{value.toLocaleString()}</p>
+        </div>
+        {percent !== undefined && (
+          <span className={`text-xs font-medium ${colors.text}`}>{percent}%</span>
         )}
       </div>
     </div>

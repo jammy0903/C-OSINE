@@ -328,8 +328,7 @@ ${this.stdinIndex > readValues.length ? '⚠️ 입력값이 부족합니다!' :
       let explanation: string;
       if (index >= 0 && index < arrSize) {
         const offset = index * 4;
-        const newBytes = this.intToBytes(value, 4);
-        arr.bytes.splice(offset, 4, ...newBytes);
+        this.writeBytesAt(arr.bytes, offset, value);
 
         explanation = `✏️ 배열 요소 '${name}[${index}]' 값 변경
 
@@ -435,8 +434,7 @@ ${this.stdinIndex > readValues.length ? '⚠️ 입력값이 부족합니다!' :
     if (ptr && heap) {
       const offset = index * 4;
       if (offset + 4 <= heap.size) {
-        const newBytes = this.intToBytes(value, 4);
-        heap.bytes.splice(offset, 4, ...newBytes);
+        this.writeBytesAt(heap.bytes, offset, value);
 
         const baseAddr = parseInt(ptr.points_to!, 16);
         const elemAddr = baseAddr + offset;
@@ -655,6 +653,14 @@ ${this.stdinIndex > readValues.length ? '⚠️ 입력값이 부족합니다!' :
       bytes.push((value >> (i * 8)) & 0xff);
     }
     return bytes;
+  }
+
+  /**
+   * 바이트 배열의 특정 위치에 정수값을 4바이트로 쓰기
+   */
+  private writeBytesAt(bytes: number[], offset: number, value: number): void {
+    const newBytes = this.intToBytes(value, 4);
+    bytes.splice(offset, 4, ...newBytes);
   }
 
   private toHex(n: number): string {
