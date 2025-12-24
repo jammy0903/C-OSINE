@@ -6,6 +6,7 @@
 import { motion } from 'framer-motion';
 import type { Step, ViewMode } from '../types';
 import { MemorySegment } from './MemorySegment';
+import { SEGMENT_COLORS } from '../constants';
 
 interface ProcessMemoryViewProps {
   step: Step | null;
@@ -29,93 +30,54 @@ export function ProcessMemoryView({ step, onViewChange }: ProcessMemoryViewProps
   }
 
   return (
-    <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+    <div className="flex-1 flex gap-6 p-4 overflow-hidden">
       {/* Memory Layout */}
-      <div className="flex-1 flex flex-col gap-2 min-w-0">
-        {/* Header */}
-        <div className="text-center text-xs text-muted-foreground py-1">
-          High Address (0x7fffffff...)
-        </div>
+      <div className="w-56 flex flex-col gap-2">
+        <div className="text-center text-xs text-muted-foreground">High Address</div>
 
-        {/* STACK - 클릭 시 확대 */}
-        <motion.div
-          className="flex-[2] min-h-0"
-          whileHover={{ scale: 1.01 }}
-        >
+        <motion.div whileHover={{ scale: 1.02 }}>
           <MemorySegment
             type="stack"
             label="STACK"
             blocks={step.stack}
             onClick={() => onViewChange('stack-detail')}
-            className="h-full"
           />
         </motion.div>
 
-        {/* FREE SPACE indicator */}
-        <div className="flex items-center justify-center py-2 border border-dashed border-border rounded-lg bg-background/50">
-          <span className="text-xs text-muted-foreground">FREE SPACE</span>
-          <svg className="w-4 h-4 mx-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-          </svg>
-          <span className="text-xs text-muted-foreground">Stack↓ Heap↑</span>
-        </div>
-
-        {/* HEAP - 클릭 시 확대 */}
-        <motion.div
-          className="flex-[2] min-h-0"
-          whileHover={{ scale: 1.01 }}
-        >
+        <motion.div whileHover={{ scale: 1.02 }}>
           <MemorySegment
             type="heap"
             label="HEAP"
             blocks={step.heap}
             onClick={() => onViewChange('heap-detail')}
-            className="h-full"
           />
         </motion.div>
 
-        {/* DATA & CODE segments */}
         <div className="flex gap-2">
-          <MemorySegment
-            type="data"
-            label="DATA"
-            className="flex-1"
-          />
-          <MemorySegment
-            type="code"
-            label="CODE"
-            className="flex-1"
-          />
+          <MemorySegment type="data" label="DATA" className="flex-1" />
+          <MemorySegment type="code" label="CODE" className="flex-1" />
         </div>
 
-        {/* Footer */}
-        <div className="text-center text-xs text-muted-foreground py-1">
-          Low Address (0x00400000)
-        </div>
+        <div className="text-center text-xs text-muted-foreground">Low Address</div>
       </div>
 
-      {/* Right Side - Memory Stats */}
-      <div className="w-48 shrink-0 flex flex-col gap-3">
-        {/* Memory Stats */}
+      {/* Memory Stats */}
+      <div className="w-40 flex flex-col gap-3">
         <div className="bg-card rounded-lg border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-2">Memory Usage</div>
+          <div className="text-xs text-muted-foreground mb-3">Memory Usage</div>
           <div className="space-y-2">
-            <StatRow label="Stack Variables" value={step.stack.length} color="text-purple-400" />
-            <StatRow label="Heap Blocks" value={step.heap.length} color="text-emerald-400" />
+            <StatRow label="Stack" value={step.stack.length} color={SEGMENT_COLORS.stack.main} />
+            <StatRow label="Heap" value={step.heap.length} color={SEGMENT_COLORS.heap.main} />
             <StatRow
               label="Pointers"
               value={[...step.stack, ...step.heap].filter(b => b.points_to).length}
-              color="text-info"
+              color="#06b6d4"
             />
           </div>
         </div>
 
-        {/* Tips */}
-        <div className="bg-info/10 rounded-lg border border-info/30 p-3 mt-auto">
-          <div className="text-xs text-info font-medium mb-1">Tip</div>
-          <p className="text-xs text-muted-foreground">
-            Click on STACK or HEAP to see details.
-          </p>
+        <div className="text-xs text-muted-foreground p-2 rounded border border-border bg-card/50">
+          Click STACK or HEAP for details
         </div>
       </div>
     </div>

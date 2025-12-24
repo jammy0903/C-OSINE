@@ -164,7 +164,7 @@ export function HeapDetailView({
       </div>
 
       {/* Footer - Heap Growth Direction */}
-      <div className="px-4 py-2 border-t border-border bg-backgroundflex items-center justify-center gap-2 text-xs text-muted-foreground">
+      <div className="px-4 py-2 border-t border-border bg-background flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <span>Lower Address</span>
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />

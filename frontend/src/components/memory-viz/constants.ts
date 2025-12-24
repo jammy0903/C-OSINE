@@ -17,31 +17,31 @@ export const ANIMATION_EASING = {
   bounce: { type: 'spring', stiffness: 400, damping: 25 },
 } as const;
 
-// 메모리 세그먼트 색상
+// 메모리 세그먼트 색상 (인라인 스타일용 hex)
 export const SEGMENT_COLORS = {
-  code: {
-    bg: 'bg-blue-500/20',
-    border: 'border-blue-500',
-    text: 'text-blue-400',
-    fill: '#3b82f6',
-  },
-  data: {
-    bg: 'bg-amber-500/20',
-    border: 'border-amber-500',
-    text: 'text-amber-400',
-    fill: '#f59e0b',
+  stack: {
+    main: '#a855f7',      // purple-500
+    bg: 'rgba(168, 85, 247, 0.1)',
+    headerBg: 'rgba(168, 85, 247, 0.25)',
+    border: 'rgba(168, 85, 247, 0.4)',
   },
   heap: {
-    bg: 'bg-emerald-500/20',
-    border: 'border-emerald-500',
-    text: 'text-emerald-400',
-    fill: '#10b981',
+    main: '#22c55e',      // green-500
+    bg: 'rgba(34, 197, 94, 0.1)',
+    headerBg: 'rgba(34, 197, 94, 0.25)',
+    border: 'rgba(34, 197, 94, 0.4)',
   },
-  stack: {
-    bg: 'bg-purple-500/20',
-    border: 'border-purple-500',
-    text: 'text-purple-400',
-    fill: '#8b5cf6',
+  data: {
+    main: '#f59e0b',      // amber-500
+    bg: 'rgba(245, 158, 11, 0.1)',
+    headerBg: 'rgba(245, 158, 11, 0.25)',
+    border: 'rgba(245, 158, 11, 0.4)',
+  },
+  code: {
+    main: '#3b82f6',      // blue-500
+    bg: 'rgba(59, 130, 246, 0.1)',
+    headerBg: 'rgba(59, 130, 246, 0.25)',
+    border: 'rgba(59, 130, 246, 0.4)',
   },
 } as const;
 

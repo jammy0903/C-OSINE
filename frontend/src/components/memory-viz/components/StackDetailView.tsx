@@ -140,7 +140,7 @@ export function StackDetailView({
                   </div>
 
                   {/* Name */}
-                  <div className="w-24 font-mono text-sm text-foregroundfont-medium truncate">
+                  <div className="w-24 font-mono text-sm text-foreground font-medium truncate">
                     {block.name}
                   </div>
 
@@ -190,7 +190,7 @@ export function StackDetailView({
       </div>
 
       {/* Footer - Stack Growth Direction */}
-      <div className="px-4 py-2 border-t border-border bg-backgroundflex items-center justify-center gap-2 text-xs text-muted-foreground">
+      <div className="px-4 py-2 border-t border-border bg-background flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <span>Higher Address</span>
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />

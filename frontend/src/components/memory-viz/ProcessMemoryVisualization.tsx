@@ -228,7 +228,6 @@ export function ProcessMemoryVisualization() {
       <CPURegistersPanel
         rsp={currentStep?.rsp || '0x0'}
         rbp={currentStep?.rbp || '0x0'}
-        currentLine={currentStep?.line}
         animationSpeed={animationSpeed}
       />
 
