@@ -6,8 +6,6 @@
 import { motion } from 'framer-motion';
 import type { Step, ViewMode } from '../types';
 import { MemorySegment } from './MemorySegment';
-import { REGISTER_COLORS } from '../constants';
-import { formatAddress } from '../utils';
 
 interface ProcessMemoryViewProps {
   step: Step | null;
@@ -53,13 +51,6 @@ export function ProcessMemoryView({ step, onViewChange }: ProcessMemoryViewProps
           />
         </motion.div>
 
-        {/* RSP/RBP Indicators */}
-        <div className="flex items-center justify-between px-2 py-1 bg-card rounded border border-border">
-          <RegisterIndicator name="RSP" value={step.rsp} color={REGISTER_COLORS.rsp} />
-          <div className="flex-1 mx-4 border-t border-dashed border-border" />
-          <RegisterIndicator name="RBP" value={step.rbp} color={REGISTER_COLORS.rbp} />
-        </div>
-
         {/* FREE SPACE indicator */}
         <div className="flex items-center justify-center py-2 border border-dashed border-border rounded-lg bg-background/50">
           <span className="text-xs text-muted-foreground">FREE SPACE</span>
@@ -103,34 +94,8 @@ export function ProcessMemoryView({ step, onViewChange }: ProcessMemoryViewProps
         </div>
       </div>
 
-      {/* Right Side - Current Step Info */}
-      <div className="w-64 shrink-0 flex flex-col gap-3">
-        {/* Current Line */}
-        <div className="bg-card rounded-lg border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-1">Current Line</div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-primary">{step.line}</span>
-            <code className="text-xs text-muted-foreground truncate flex-1">
-              {step.code}
-            </code>
-          </div>
-        </div>
-
-        {/* Register Values */}
-        <div className="bg-card rounded-lg border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-2">Registers</div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs" style={{ color: REGISTER_COLORS.rsp }}>RSP</span>
-              <code className="font-mono text-xs text-foreground">{formatAddress(step.rsp, true)}</code>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs" style={{ color: REGISTER_COLORS.rbp }}>RBP</span>
-              <code className="font-mono text-xs text-foreground">{formatAddress(step.rbp, true)}</code>
-            </div>
-          </div>
-        </div>
-
+      {/* Right Side - Memory Stats */}
+      <div className="w-48 shrink-0 flex flex-col gap-3">
         {/* Memory Stats */}
         <div className="bg-card rounded-lg border border-border p-3">
           <div className="text-xs text-muted-foreground mb-2">Memory Usage</div>
@@ -149,26 +114,10 @@ export function ProcessMemoryView({ step, onViewChange }: ProcessMemoryViewProps
         <div className="bg-info/10 rounded-lg border border-info/30 p-3 mt-auto">
           <div className="text-xs text-info font-medium mb-1">Tip</div>
           <p className="text-xs text-muted-foreground">
-            Click on STACK or HEAP sections to see detailed view with individual memory blocks.
+            Click on STACK or HEAP to see details.
           </p>
         </div>
       </div>
-    </div>
-  );
-}
-
-interface RegisterIndicatorProps {
-  name: string;
-  value: string;
-  color: string;
-}
-
-function RegisterIndicator({ name, value, color }: RegisterIndicatorProps) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-      <span className="text-xs font-medium" style={{ color }}>{name}</span>
-      <code className="font-mono text-xs text-muted-foreground">{formatAddress(value, true)}</code>
     </div>
   );
 }
