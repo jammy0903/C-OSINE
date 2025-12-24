@@ -1,39 +1,79 @@
+@import "tw-animate-css";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ===== C-OSINE Theme System ===== */
+/* shadcn/ui based theme with custom fonts */
+
 :root {
-  /* Background layers */
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #111111;
-  --bg-tertiary: #1a1a1a;
-
-  /* Text colors */
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --text-muted: #505050;
-
-  /* Border */
-  --border-color: #252525;
-
-  /* Accent colors */
-  --color-success: #4ade80;
-  --color-error: #f87171;
-  --color-warning: #fbbf24;
-  --color-pointer: #fb923c;
-  --color-stack: #a78bfa;
-  --color-heap: #34d399;
-
   /* Fonts */
-  --font-logo: 'Orbitron', sans-serif;
-  --font-logo-kr: 'Gugi', sans-serif;
-  --font-title: 'Rajdhani', sans-serif;
-  --font-title-kr: 'Do Hyeon', sans-serif;
-  --font-body: 'Space Grotesk', sans-serif;
-  --font-body-kr: 'Gothic A1', sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-logo: 'Pretendard Variable', 'Pretendard', sans-serif;
+
+  /* shadcn/ui Variables (Light Mode) */
+  --radius: 0.5rem;
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #f9fafb;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #374151;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --accent: #f3f4f6;
+  --accent-foreground: #111827;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #6366f1;
+  --chart-1: #6366f1;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #06b6d4;
+  --chart-5: #ec4899;
 }
 
+/* ===== Dark Mode ===== */
+:root.dark {
+  --background: #1f2937;
+  --foreground: #ffffff;
+  --card: #374151;
+  --card-foreground: #ffffff;
+  --popover: #374151;
+  --popover-foreground: #ffffff;
+  --primary: #818cf8;
+  --primary-foreground: #111827;
+  --secondary: #4b5563;
+  --secondary-foreground: #d1d5db;
+  --muted: #4b5563;
+  --muted-foreground: #9ca3af;
+  --accent: #4b5563;
+  --accent-foreground: #ffffff;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #818cf8;
+  --chart-1: #818cf8;
+  --chart-2: #34d399;
+  --chart-3: #fbbf24;
+  --chart-4: #22d3ee;
+  --chart-5: #f472b6;
+}
+
+/* ===== Base Styles ===== */
 * {
   margin: 0;
   padding: 0;
@@ -41,42 +81,23 @@
 }
 
 body {
-  font-family: var(--font-body), var(--font-body-kr), sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
   min-height: 100vh;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
-}
-
-/* Font utility classes */
-.font-logo {
-  font-family: var(--font-logo), var(--font-logo-kr), sans-serif;
-}
-
-.font-title {
-  font-family: var(--font-title), var(--font-title-kr), sans-serif;
-}
-
-.font-body {
-  font-family: var(--font-body), var(--font-body-kr), sans-serif;
-}
-
-/* Input styles */
-input, textarea {
-  color: inherit;
-  font-family: inherit;
-  letter-spacing: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* Minimal scrollbar */
+/* ===== Scrollbar ===== */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -84,32 +105,76 @@ input, textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--border);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--muted-foreground);
 }
 
-/* Code blocks */
+/* ===== Code ===== */
 pre, code {
   font-family: var(--font-mono);
 }
 
-/* Focus states */
+/* ===== Focus ===== */
 input:focus, textarea:focus, button:focus {
   outline: none;
 }
 
-/* Selection */
+/* ===== Selection ===== */
 ::selection {
-  background: rgba(255, 255, 255, 0.15);
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
+  color: var(--primary);
 }
 
-/* Color utility classes */
-.text-success { color: var(--color-success); }
-.text-error { color: var(--color-error); }
-.text-warning { color: var(--color-warning); }
-.border-success { border-color: var(--color-success); }
-.border-error { border-color: var(--color-error); }
-.border-warning { border-color: var(--color-warning); }
+/* ===== Theme Transition ===== */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+}
+
+/* ===== shadcn/ui Theme Integration ===== */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

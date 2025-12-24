@@ -6,6 +6,8 @@ interface Store {
   // === 사용자 ===
   user: User | null;
   setUser: (user: User | null) => void;
+  isAdmin: boolean;
+  setIsAdmin: (isAdmin: boolean) => void;
   solvedProblems: string[];  // 정답 처리된 문제 ID 목록
   attemptedProblems: string[];  // 시도한 문제 ID 목록
   setSolvedStatus: (solved: string[], attempted: string[]) => void;
@@ -53,6 +55,8 @@ export const useStore = create<Store>((set) => ({
   // === 사용자 ===
   user: null,
   setUser: (user) => set({ user }),
+  isAdmin: false,
+  setIsAdmin: (isAdmin) => set({ isAdmin }),
   solvedProblems: [],
   attemptedProblems: [],
   setSolvedStatus: (solved, attempted) => set({ solvedProblems: solved, attemptedProblems: attempted }),

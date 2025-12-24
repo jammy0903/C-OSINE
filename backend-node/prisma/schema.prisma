@@ -12,6 +12,7 @@ model User {
   email       String       @unique
   name        String
   firebaseUid String       @unique @map("firebase_uid")
+  role        String       @default("user")
   createdAt   DateTime     @default(now()) @map("created_at")
   drafts      Draft[]
   submissions Submission[]
@@ -26,12 +27,14 @@ model Problem {
   description String
   difficulty  String       @default("bronze_5")
   tags        String       @default("[]")
+  source      String?
   srcUrl      String?      @map("src_url")
   hints       String       @default("[]")
   solution    String?
   testCases   String       @default("[]") @map("test_cases")
   timeLimit   Int          @default(1000) @map("time_limit")
   memoryLimit Int          @default(256) @map("memory_limit")
+  createdAt   DateTime     @default(now()) @map("created_at")
   drafts      Draft[]
   submissions Submission[]
 

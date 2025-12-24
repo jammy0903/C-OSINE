@@ -1,6 +1,13 @@
 import { useState, useRef } from 'react';
 import Xarrow, { Xwrapper } from 'react-xarrows';
 import { traceCode, type Step, type MemoryBlock } from '../services/tracer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Play, ChevronLeft, ChevronRight, Cpu, AlertCircle } from 'lucide-react';
 
 const DEFAULT_CODE = `#include <stdio.h>
 
@@ -50,23 +57,29 @@ export function MemoryViz() {
   const lines = code.split('\n');
 
   return (
-    <div className="flex h-full bg-bg rounded-xl overflow-hidden">
+    <div className="flex h-full rounded-xl overflow-hidden">
       {/* Left: Code Editor */}
-      <div className="w-1/2 flex flex-col border-r border-border bg-bg-elevated">
+      <Card className="w-1/2 flex flex-col min-w-0 rounded-none border-r">
         {/* Header */}
-        <div className="px-5 py-3 border-b border-border flex items-center justify-between shrink-0">
-          <h2 className="text-sm font-medium text-text">Code</h2>
-          {step && (
-            <span className="text-xs text-primary">Line {step.line}</span>
-          )}
-        </div>
+        <CardHeader className="py-3 px-5 shrink-0">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Code</CardTitle>
+            {step && (
+              <Badge variant="outline" className="text-primary">
+                Line {step.line}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+
+        <Separator />
 
         {/* Code Editor */}
         <div className="flex-1 flex overflow-hidden min-h-0">
-          {/* Line Numbers - 줄 사이에 배치 */}
+          {/* Line Numbers */}
           <div
             ref={lineNumbersRef}
-            className="bg-bg text-text-tertiary font-mono text-sm select-none overflow-hidden border-r border-border"
+            className="bg-background text-muted-foreground font-mono text-sm select-none overflow-hidden border-r"
             style={{ minWidth: '3.5rem' }}
           >
             {lines.map((_, idx) => {
@@ -87,7 +100,7 @@ export function MemoryViz() {
           </div>
 
           {/* Code Area */}
-          <div className="flex-1 relative bg-bg">
+          <div className="flex-1 relative bg-background">
             {/* Highlight Layer */}
             <div className="absolute inset-0 font-mono text-sm z-10 pointer-events-none">
               {lines.map((_, idx) => {
@@ -112,7 +125,7 @@ export function MemoryViz() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onScroll={handleScroll}
-              className="w-full h-full bg-transparent font-mono text-sm px-4 resize-none focus:outline-none relative z-20 text-text"
+              className="w-full h-full bg-transparent font-mono text-sm px-4 resize-none focus:outline-none relative z-20"
               placeholder="Enter C code..."
               spellCheck={false}
               style={{ lineHeight: '1.75rem' }}
@@ -121,92 +134,97 @@ export function MemoryViz() {
         </div>
 
         {/* Stdin & Controls */}
-        <div className="px-5 py-4 border-t border-border bg-bg-elevated shrink-0">
+        <div className="px-5 py-4 border-t bg-card shrink-0">
           {/* Stdin */}
           <div className="mb-3">
-            <label className="text-text-tertiary text-xs font-medium mb-1.5 block">Input (stdin)</label>
-            <input
+            <label htmlFor="memory-stdin" className="text-muted-foreground text-xs font-medium mb-1.5 block">
+              Input (stdin)
+            </label>
+            <Input
+              id="memory-stdin"
               type="text"
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
               placeholder="e.g., 3 5"
-              className="w-full bg-bg border border-border rounded-lg font-mono text-sm px-3 py-2 text-text placeholder-text-muted focus:outline-none focus:border-primary"
+              className="font-mono"
             />
           </div>
 
           {/* Controls */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleTrace}
-              disabled={isLoading}
-              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-50 transition-colors"
-            >
+            <Button onClick={handleTrace} disabled={isLoading}>
+              <Play className="h-4 w-4 mr-1" />
               {isLoading ? 'Analyzing...' : 'Analyze'}
-            </button>
+            </Button>
 
             {steps.length > 0 && (
               <>
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                   disabled={currentStep === 0}
-                  className="px-3 py-2 bg-bg-tertiary text-text-secondary text-sm font-medium rounded-lg hover:bg-bg-hover disabled:opacity-40 transition-colors"
                 >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
                   Prev
-                </button>
-                <span className="text-text-secondary text-sm min-w-[50px] text-center">
+                </Button>
+                <span className="text-muted-foreground text-sm min-w-[50px] text-center">
                   {currentStep + 1} / {steps.length}
                 </span>
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
                   disabled={currentStep === steps.length - 1}
-                  className="px-3 py-2 bg-bg-tertiary text-text-secondary text-sm font-medium rounded-lg hover:bg-bg-hover disabled:opacity-40 transition-colors"
                 >
                   Next
-                </button>
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
               </>
             )}
           </div>
 
           {error && (
-            <p className="mt-3 text-danger text-sm bg-danger/10 px-3 py-2 rounded-lg">{error}</p>
+            <Card className="mt-3 border-destructive/30 bg-destructive/5">
+              <CardContent className="p-3 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-destructive" />
+                <p className="text-destructive text-sm">{error}</p>
+              </CardContent>
+            </Card>
           )}
         </div>
 
         {/* Explanation */}
         {step && step.explanation && (
-          <div className="px-5 py-4 border-t border-border bg-info/5 max-h-32 overflow-auto shrink-0">
-            <h3 className="text-xs font-medium text-info mb-2">Explanation</h3>
-            <pre className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">
+          <div className="px-5 py-4 border-t bg-cyan-500/5 max-h-32 overflow-auto shrink-0">
+            <h3 className="text-xs font-medium text-cyan-500 mb-2">Explanation</h3>
+            <pre className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
               {step.explanation}
             </pre>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Right: Memory Visualization */}
-      <div className="w-1/2 flex flex-col bg-bg">
+      <div className="w-1/2 flex flex-col bg-background">
         {/* Header */}
-        <div className="px-5 py-3 border-b border-border shrink-0">
-          <h2 className="text-sm font-medium text-text">Memory</h2>
+        <div className="px-5 py-3 border-b shrink-0">
+          <h2 className="text-sm font-medium">Memory</h2>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-5">
+        <ScrollArea className="flex-1 p-5">
           {!step ? (
-            <div className="h-full flex flex-col items-center justify-center">
+            <div className="h-full flex flex-col items-center justify-center py-20">
               <div className="w-14 h-14 rounded-xl bg-primary/15 flex items-center justify-center mb-4">
-                <svg width="28" height="28" className="text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                </svg>
+                <Cpu className="h-7 w-7 text-primary" />
               </div>
-              <p className="text-text-secondary text-sm">Run trace to visualize memory</p>
+              <p className="text-muted-foreground text-sm">Run trace to visualize memory</p>
             </div>
           ) : (
             <Xwrapper>
               <MemoryGrid stack={step.stack || []} heap={step.heap || []} />
             </Xwrapper>
           )}
-        </div>
+        </ScrollArea>
       </div>
     </div>
   );
@@ -231,58 +249,60 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
   return (
     <div className="space-y-5">
       {/* Memory Container */}
-      <div className="border border-border rounded-xl p-5 bg-bg-elevated">
-        <div className="text-center text-text-tertiary text-xs font-medium uppercase tracking-wider mb-5">
-          Virtual Memory
-        </div>
-
-        {/* STACK */}
-        <div className="mb-5">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-xs font-medium text-text">Stack</span>
-            <span className="text-text-muted text-xs">high → low</span>
+      <Card>
+        <CardContent className="p-5">
+          <div className="text-center text-muted-foreground text-xs font-medium uppercase tracking-wider mb-5">
+            Virtual Memory
           </div>
 
-          {stack.length === 0 ? (
-            <div className="border border-dashed border-border rounded-lg p-4 text-center text-text-muted text-xs">
-              EMPTY
+          {/* STACK */}
+          <div className="mb-5">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-xs font-medium">Stack</span>
+              <span className="text-muted-foreground text-xs">high → low</span>
             </div>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {stack.map((block) => (
-                <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Separator */}
-        <div className="flex items-center justify-center my-5">
-          <div className="flex-1 border-t border-dashed border-border"></div>
-          <span className="px-4 text-text-muted text-xs">FREE</span>
-          <div className="flex-1 border-t border-dashed border-border"></div>
-        </div>
-
-        {/* HEAP */}
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-xs font-medium text-text">Heap</span>
-            <span className="text-text-muted text-xs">low → high</span>
+            {stack.length === 0 ? (
+              <div className="border border-dashed rounded-lg p-4 text-center text-muted-foreground text-xs">
+                EMPTY
+              </div>
+            ) : (
+              <div className="grid grid-cols-4 gap-2">
+                {stack.map((block) => (
+                  <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
+                ))}
+              </div>
+            )}
           </div>
 
-          {heap.length === 0 ? (
-            <div className="border border-dashed border-border rounded-lg p-4 text-center text-text-muted text-xs">
-              EMPTY (before malloc)
+          {/* Separator */}
+          <div className="flex items-center justify-center my-5">
+            <div className="flex-1 border-t border-dashed"></div>
+            <span className="px-4 text-muted-foreground text-xs">FREE</span>
+            <div className="flex-1 border-t border-dashed"></div>
+          </div>
+
+          {/* HEAP */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-xs font-medium">Heap</span>
+              <span className="text-muted-foreground text-xs">low → high</span>
             </div>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {heap.map((block) => (
-                <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+
+            {heap.length === 0 ? (
+              <div className="border border-dashed rounded-lg p-4 text-center text-muted-foreground text-xs">
+                EMPTY (before malloc)
+              </div>
+            ) : (
+              <div className="grid grid-cols-4 gap-2">
+                {heap.map((block) => (
+                  <MemoryCell key={block.address} block={block} allBlocks={allBlocks} />
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Pointer Arrows */}
       {pointerConnections.map((conn, idx) => (
@@ -300,27 +320,29 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
       ))}
 
       {/* Legend */}
-      <div className="border border-border rounded-xl p-4 bg-bg-elevated">
-        <div className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-3">Legend</div>
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border border-border rounded bg-bg-tertiary"></div>
-            <span className="text-text-secondary">Stack variable</span>
+      <Card>
+        <CardContent className="p-4">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Legend</div>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border rounded bg-muted"></div>
+              <span className="text-muted-foreground">Stack variable</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-primary rounded"></div>
+              <span className="text-muted-foreground">Pointer</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border rounded bg-background"></div>
+              <span className="text-muted-foreground">Heap memory</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-0 border-t-2 border-primary"></div>
+              <span className="text-muted-foreground">Points to</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-primary rounded"></div>
-            <span className="text-text-secondary">Pointer</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border border-border rounded bg-bg"></div>
-            <span className="text-text-secondary">Heap memory</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-0 border-t-2 border-primary"></div>
-            <span className="text-text-secondary">Points to</span>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -332,36 +354,38 @@ function MemoryCell({ block, allBlocks }: { block: MemoryBlock; allBlocks: Memor
     : null;
 
   return (
-    <div
+    <Card
       id={`block-${block.address}`}
-      className={`border rounded-lg p-3 text-center transition-all bg-bg-tertiary ${
-        isPointer ? 'border-primary border-2' : 'border-border hover:border-primary/50'
+      className={`text-center transition-all ${
+        isPointer ? 'border-primary border-2' : 'hover:border-primary/50'
       }`}
     >
-      {/* Variable Name */}
-      <div className="font-mono text-text text-sm font-medium truncate" title={block.name}>
-        {block.name}
-      </div>
+      <CardContent className="p-3">
+        {/* Variable Name */}
+        <div className="font-mono text-sm font-medium truncate" title={block.name}>
+          {block.name}
+        </div>
 
-      {/* Value */}
-      <div className="text-lg font-medium text-primary my-1.5">
-        {isPointer && pointsToBlock ? (
-          <span className="text-info text-sm">→ {pointsToBlock.name}</span>
-        ) : isPointer && block.points_to ? (
-          <span className="text-text-muted text-xs font-mono">{block.points_to}</span>
-        ) : (
-          block.value
-        )}
-      </div>
+        {/* Value */}
+        <div className="text-lg font-medium text-primary my-1.5">
+          {isPointer && pointsToBlock ? (
+            <span className="text-cyan-500 text-sm">→ {pointsToBlock.name}</span>
+          ) : isPointer && block.points_to ? (
+            <span className="text-muted-foreground text-xs font-mono">{block.points_to}</span>
+          ) : (
+            block.value
+          )}
+        </div>
 
-      {/* Address */}
-      <div className="text-xs text-text-muted font-mono truncate" title={block.address}>
-        {formatAddress(block.address)}
-      </div>
+        {/* Address */}
+        <div className="text-xs text-muted-foreground font-mono truncate" title={block.address}>
+          {formatAddress(block.address)}
+        </div>
 
-      {/* Type */}
-      <div className="text-xs text-text-tertiary mt-1">{block.type}</div>
-    </div>
+        {/* Type */}
+        <div className="text-xs text-muted-foreground mt-1">{block.type}</div>
+      </CardContent>
+    </Card>
   );
 }
 

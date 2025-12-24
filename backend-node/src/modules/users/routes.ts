@@ -28,6 +28,7 @@ userRoutes.get('/', async (req, res) => {
       email: user.email,
       name: user.name,
       firebaseUid: user.firebaseUid,
+      role: user.role,
       createdAt: user.createdAt,
       totalSubmissions: user._count.submissions,
       solvedCount: user.submissions.length,
@@ -82,5 +83,23 @@ userRoutes.get('/:firebaseUid', async (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// 사용자 role 조회 (Admin 체크용)
+userRoutes.get('/:firebaseUid/role', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { firebaseUid: req.params.firebaseUid },
+      select: { role: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ role: user.role, isAdmin: user.role === 'admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user role' });
   }
 });

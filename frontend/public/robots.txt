@@ -1,0 +1,15 @@
+# C-OSINE Robots.txt
+# https://c-osine.dev/
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://c-osine.dev/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /manajammy
+Disallow: /api/
+
+# Crawl-delay for politeness
+Crawl-delay: 1

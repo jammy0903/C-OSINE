@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { useStore } from '../stores/store';
 import { runCode, runTestCases, type TestCaseResult } from '../services/crunner';
 import { createSubmission } from '../services/submissions';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Play, Gavel, RotateCcw, ChevronDown, ChevronUp, X, Check, XCircle } from 'lucide-react';
 import CodeMirror from '@uiw/react-codemirror';
 import { cpp } from '@codemirror/lang-cpp';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
@@ -94,56 +101,68 @@ int main() {
   };
 
   return (
-    <div className="flex h-full bg-bg rounded-xl overflow-hidden">
+    <div className="flex h-full rounded-xl overflow-hidden">
       {/* Problem Panel */}
       {selectedProblem && (
-        <div className="w-1/2 flex flex-col border-r border-border min-w-0 bg-bg-elevated">
-          {/* Problem Header */}
-          <div className="px-5 py-3 border-b border-border flex items-center justify-between shrink-0">
-            <div className="min-w-0">
-              <span className="text-text-tertiary text-xs font-mono">#{selectedProblem.number}</span>
-              <h2 className="text-sm font-medium text-text truncate">{selectedProblem.title}</h2>
-            </div>
-            <button
-              onClick={handleClose}
-              className="text-xs text-text-tertiary hover:text-text-secondary transition-colors px-2 py-1 rounded hover:bg-bg-hover"
-            >
-              Close
-            </button>
-          </div>
-
-          {/* Problem Description */}
-          <div className="flex-1 overflow-y-auto px-5 py-4">
-            <pre className="whitespace-pre-wrap text-text-secondary leading-relaxed text-sm">
-              {selectedProblem.description}
-            </pre>
-
-            {/* Test Cases */}
-            {selectedProblem.testCases && selectedProblem.testCases.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-3">Test Cases</h3>
-                {selectedProblem.testCases.map((tc, i) => (
-                  <div key={i} className="mb-3 border border-border rounded-lg overflow-hidden">
-                    <div className="p-3 border-b border-border bg-bg">
-                      <span className="text-text-muted text-xs">Input</span>
-                      <pre className="mt-1.5 text-text font-mono text-sm">{tc.input || '(none)'}</pre>
-                    </div>
-                    <div className="p-3 bg-bg">
-                      <span className="text-text-muted text-xs">Output</span>
-                      <pre className="mt-1.5 text-text font-mono text-sm">{tc.output}</pre>
-                    </div>
-                  </div>
-                ))}
+        <Card className="w-1/2 flex flex-col min-w-0 rounded-none border-r">
+          <CardHeader className="py-3 px-5 shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                <Badge variant="outline" className="mb-1 font-mono">
+                  #{selectedProblem.number}
+                </Badge>
+                <CardTitle className="text-sm truncate">{selectedProblem.title}</CardTitle>
               </div>
-            )}
-          </div>
-        </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                aria-label="Close problem panel"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Close
+              </Button>
+            </div>
+          </CardHeader>
+
+          <Separator />
+
+          <ScrollArea className="flex-1">
+            <CardContent className="py-4">
+              <pre className="whitespace-pre-wrap text-muted-foreground leading-relaxed text-sm">
+                {selectedProblem.description}
+              </pre>
+
+              {selectedProblem.testCases && selectedProblem.testCases.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                    Test Cases
+                  </h3>
+                  <div className="space-y-3">
+                    {selectedProblem.testCases.map((tc, i) => (
+                      <Card key={i} className="overflow-hidden">
+                        <div className="p-3 border-b">
+                          <span className="text-muted-foreground text-xs">Input</span>
+                          <pre className="mt-1.5 font-mono text-sm">{tc.input || '(none)'}</pre>
+                        </div>
+                        <div className="p-3">
+                          <span className="text-muted-foreground text-xs">Output</span>
+                          <pre className="mt-1.5 font-mono text-sm">{tc.output}</pre>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </ScrollArea>
+        </Card>
       )}
 
       {/* Code Editor Area */}
       <div className={`flex flex-col ${selectedProblem ? 'w-1/2' : 'w-full'}`}>
         {/* Editor */}
-        <div className={`${isTerminalOpen ? 'h-1/2' : 'flex-1'} overflow-auto border-b border-border`}>
+        <div className={`${isTerminalOpen ? 'h-1/2' : 'flex-1'} overflow-auto border-b`}>
           <CodeMirror
             value={code}
             onChange={setCode}
@@ -160,103 +179,125 @@ int main() {
         </div>
 
         {/* Toolbar */}
-        <div className="px-5 py-3 bg-bg-elevated border-t border-border shrink-0">
+        <div className="px-5 py-3 bg-card border-t shrink-0">
           {/* Stdin */}
           <div className="mb-3">
-            <label className="text-text-tertiary text-xs font-medium mb-1.5 block">Input (stdin)</label>
-            <input
+            <label htmlFor="stdin-input" className="text-muted-foreground text-xs font-medium mb-1.5 block">
+              Input (stdin)
+            </label>
+            <Input
+              id="stdin-input"
               type="text"
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
               placeholder="e.g., 3 5"
-              className="w-full bg-bg border border-border rounded-lg font-mono text-sm px-3 py-2 text-text placeholder-text-muted focus:outline-none focus:border-primary"
+              className="font-mono"
             />
           </div>
 
           {/* Buttons */}
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={handleRun}
               disabled={isRunning || isJudging}
-              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-50 transition-colors"
             >
+              <Play className="h-4 w-4 mr-1" />
               {isRunning ? 'Running...' : 'Run'}
-            </button>
+            </Button>
 
             {selectedProblem && (
-              <button
+              <Button
                 onClick={handleJudge}
                 disabled={isRunning || isJudging}
-                className="px-4 py-2 bg-success text-white text-sm font-medium rounded-lg hover:bg-success-dark disabled:opacity-50 transition-colors"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
+                <Gavel className="h-4 w-4 mr-1" />
                 {isJudging ? 'Judging...' : 'Judge'}
-              </button>
+              </Button>
             )}
 
-            <button
-              onClick={handleReset}
-              className="px-3 py-2 bg-bg-tertiary text-text-secondary text-sm font-medium rounded-lg hover:bg-bg-hover transition-colors"
-            >
+            <Button variant="secondary" onClick={handleReset}>
+              <RotateCcw className="h-4 w-4 mr-1" />
               Reset
-            </button>
+            </Button>
 
             <div className="flex-1" />
 
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setIsTerminalOpen(!isTerminalOpen)}
-              className="text-xs text-text-tertiary hover:text-text-secondary transition-colors"
             >
-              {isTerminalOpen ? 'Hide Output' : 'Show Output'}
-            </button>
+              {isTerminalOpen ? (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-1" />
+                  Hide Output
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-1" />
+                  Show Output
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
         {/* Output */}
         {isTerminalOpen && (
-          <div className="h-1/2 overflow-y-auto bg-bg px-5 py-4">
+          <ScrollArea className="h-1/2 px-5 py-4">
             {/* Judge Results */}
             {judgeResults && (
               <div className="mb-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider">Result</span>
-                  <span className={`text-sm font-semibold ${judgeResults.allPassed ? 'text-success' : 'text-danger'}`}>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Result</span>
+                  <Badge variant={judgeResults.allPassed ? 'default' : 'destructive'} className={judgeResults.allPassed ? 'bg-emerald-600' : ''}>
                     {judgeResults.allPassed ? 'ACCEPTED' : 'WRONG ANSWER'}
-                  </span>
-                  <span className="text-text-muted text-xs">
+                  </Badge>
+                  <span className="text-muted-foreground text-xs">
                     {judgeResults.passedCount}/{judgeResults.totalCount}
                   </span>
                 </div>
 
                 <div className="space-y-2">
                   {judgeResults.results.map((tc, i) => (
-                    <div
+                    <Card
                       key={i}
-                      className={`p-3 rounded-lg border ${tc.passed ? 'border-success/30 bg-success/5' : 'border-danger/30 bg-danger/5'}`}
+                      className={tc.passed ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-destructive/30 bg-destructive/5'}
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`text-sm font-medium ${tc.passed ? 'text-success' : 'text-danger'}`}>
-                          Test {i + 1}: {tc.passed ? 'PASS' : 'FAIL'}
-                        </span>
-                        {tc.time && <span className="text-text-muted text-xs">{tc.time}</span>}
-                      </div>
-
-                      {!tc.passed && (
-                        <div className="text-sm space-y-1 mt-2">
-                          <div className="flex gap-3">
-                            <span className="text-text-muted text-xs w-16">Input</span>
-                            <code className="text-text font-mono text-xs">{tc.input || '(none)'}</code>
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            {tc.passed ? (
+                              <Check className="h-4 w-4 text-emerald-500" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-destructive" />
+                            )}
+                            <span className={`text-sm font-medium ${tc.passed ? 'text-emerald-500' : 'text-destructive'}`}>
+                              Test {i + 1}: {tc.passed ? 'PASS' : 'FAIL'}
+                            </span>
                           </div>
-                          <div className="flex gap-3">
-                            <span className="text-text-muted text-xs w-16">Expected</span>
-                            <code className="text-success font-mono text-xs">{tc.expected}</code>
-                          </div>
-                          <div className="flex gap-3">
-                            <span className="text-text-muted text-xs w-16">Actual</span>
-                            <code className="text-danger font-mono text-xs">{tc.actual}</code>
-                          </div>
+                          {tc.time && <span className="text-muted-foreground text-xs">{tc.time}</span>}
                         </div>
-                      )}
-                    </div>
+
+                        {!tc.passed && (
+                          <div className="text-sm space-y-1 mt-2 ml-6">
+                            <div className="flex gap-3">
+                              <span className="text-muted-foreground text-xs w-16">Input</span>
+                              <code className="font-mono text-xs">{tc.input || '(none)'}</code>
+                            </div>
+                            <div className="flex gap-3">
+                              <span className="text-muted-foreground text-xs w-16">Expected</span>
+                              <code className="text-emerald-500 font-mono text-xs">{tc.expected}</code>
+                            </div>
+                            <div className="flex gap-3">
+                              <span className="text-muted-foreground text-xs w-16">Actual</span>
+                              <code className="text-destructive font-mono text-xs">{tc.actual}</code>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </div>
@@ -266,27 +307,31 @@ int main() {
             {!judgeResults && (
               <>
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider">Output</span>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Output</span>
                   {result && (
-                    <span className={`text-xs font-medium ${result.success ? 'text-success' : 'text-danger'}`}>
+                    <Badge variant={result.success ? 'default' : 'destructive'} className={result.success ? 'bg-emerald-600' : ''}>
                       {result.success ? 'SUCCESS' : 'ERROR'}
-                    </span>
+                    </Badge>
                   )}
-                  {result?.time && <span className="text-text-muted text-xs">{result.time}</span>}
+                  {result?.time && <span className="text-muted-foreground text-xs">{result.time}</span>}
                 </div>
 
                 {result ? (
-                  <pre className="font-mono text-sm whitespace-pre-wrap text-text-secondary leading-relaxed p-3 bg-bg-elevated rounded-lg border border-border">
-                    {result.output}
-                  </pre>
+                  <Card>
+                    <CardContent className="p-3">
+                      <pre className="font-mono text-sm whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                        {result.output}
+                      </pre>
+                    </CardContent>
+                  </Card>
                 ) : (
-                  <p className="text-text-muted text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {isRunning ? 'Running...' : isJudging ? 'Judging...' : 'Click Run to execute your code.'}
                   </p>
                 )}
               </>
             )}
-          </div>
+          </ScrollArea>
         )}
       </div>
     </div>

@@ -4,74 +4,75 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Background - Charcoal Gray Dark Theme
+        // Background - CSS 변수 사용
         bg: {
-          DEFAULT: '#1c1c1e',
-          elevated: '#2c2c2e',
-          tertiary: '#3c3c3e',
-          hover: '#3a3a3c',
+          DEFAULT: 'var(--color-bg)',
+          elevated: 'var(--color-bg-elevated)',
+          tertiary: 'var(--color-bg-tertiary)',
+          hover: 'var(--color-bg-hover)',
         },
         // Text colors
         text: {
-          DEFAULT: '#ffffff',
-          secondary: '#a1a1a6',
-          tertiary: '#636366',
-          muted: '#48484a',
+          DEFAULT: 'var(--color-text)',
+          secondary: 'var(--color-text-secondary)',
+          tertiary: 'var(--color-text-tertiary)',
+          muted: 'var(--color-text-muted)',
         },
-        // Primary - Indigo/Blue
+        // Primary
         primary: {
-          DEFAULT: '#6366f1',
-          hover: '#4f46e5',
-          light: '#818cf8',
-          muted: 'rgba(99, 102, 241, 0.15)',
+          DEFAULT: 'var(--color-primary)',
+          hover: 'var(--color-primary-hover)',
+          light: 'var(--color-primary-light)',
+          muted: 'var(--color-primary-muted)',
         },
-        // Success - Green
+        // Success
         success: {
-          DEFAULT: '#34d399',
-          light: '#6ee7b7',
-          dark: '#10b981',
-          muted: 'rgba(52, 211, 153, 0.15)',
+          DEFAULT: 'var(--color-success)',
+          light: 'var(--color-success-light)',
+          dark: 'var(--color-success-dark)',
+          muted: 'var(--color-success-muted)',
         },
-        // Warning - Orange
+        // Warning
         warning: {
-          DEFAULT: '#fbbf24',
-          light: '#fcd34d',
-          dark: '#f59e0b',
-          muted: 'rgba(251, 191, 36, 0.15)',
+          DEFAULT: 'var(--color-warning)',
+          light: 'var(--color-warning-light)',
+          dark: 'var(--color-warning-dark)',
+          muted: 'var(--color-warning-muted)',
         },
-        // Danger - Red
+        // Danger
         danger: {
-          DEFAULT: '#f87171',
-          light: '#fca5a5',
-          dark: '#ef4444',
-          muted: 'rgba(248, 113, 113, 0.15)',
+          DEFAULT: 'var(--color-danger)',
+          light: 'var(--color-danger-light)',
+          dark: 'var(--color-danger-dark)',
+          muted: 'var(--color-danger-muted)',
         },
-        // Info - Cyan
+        // Info
         info: {
-          DEFAULT: '#22d3ee',
-          light: '#67e8f9',
-          dark: '#06b6d4',
-          muted: 'rgba(34, 211, 238, 0.15)',
+          DEFAULT: 'var(--color-info)',
+          light: 'var(--color-info-light)',
+          dark: 'var(--color-info-dark)',
+          muted: 'var(--color-info-muted)',
         },
         // Border
         border: {
-          DEFAULT: 'rgba(255, 255, 255, 0.1)',
-          light: 'rgba(255, 255, 255, 0.05)',
-          dark: 'rgba(255, 255, 255, 0.15)',
+          DEFAULT: 'var(--color-border)',
+          light: 'var(--color-border-light)',
+          dark: 'var(--color-border-dark)',
         },
       },
       fontFamily: {
-        sans: ['Pretendard', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-        logo: ['Space Grotesk', 'sans-serif'],
+        sans: ['var(--font-sans)'],
+        mono: ['var(--font-mono)'],
+        logo: ['var(--font-logo)'],
       },
       boxShadow: {
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
-        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.25)',
-        'glow': '0 0 20px rgba(99, 102, 241, 0.3)',
+        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'glow': '0 0 20px var(--color-primary-muted)',
       },
       animation: {
         'fade-in': 'fadeIn 0.2s ease-out',

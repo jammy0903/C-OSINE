@@ -24,3 +24,19 @@ export async function registerUser(data: {
     return false;
   }
 }
+
+/**
+ * 사용자 role 조회 (Admin 체크용)
+ */
+export async function getUserRole(firebaseUid: string): Promise<{ role: string; isAdmin: boolean }> {
+  try {
+    const response = await fetch(`${API_URL}/api/users/${firebaseUid}/role`);
+    if (!response.ok) {
+      return { role: 'user', isAdmin: false };
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Role 조회 실패:', error);
+    return { role: 'user', isAdmin: false };
+  }
+}

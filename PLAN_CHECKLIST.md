@@ -67,6 +67,10 @@
 | `plans/06_security.md` | 보안 설계 | ✅ 완료 |
 | `plans/07_testing.md` | 테스트 전략 | ✅ 완료 |
 | `plans/08_devops.md` | DevOps/배포 | ✅ 완료 |
+| `plans/11_real_mvp.md` | 진짜 MVP 설계 | ✅ 완료 |
+| `plans/12_theme_system.md` | 다크/라이트 테마 | ✅ 완료 |
+| `plans/13_design_overhaul.md` | 디자인 전면 개편 | 📝 계획됨 |
+| `plans/14_develop_rules.md` | 개발 규칙 (스타일링) | ✅ 완료 |
 
 ---
 

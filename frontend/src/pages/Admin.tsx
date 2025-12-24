@@ -1,4 +1,21 @@
 import { useEffect, useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { StatCard } from '@/components/ui/stat-card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { ArrowLeft, Search, Users, Code, CheckCircle, FileText } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -17,6 +34,9 @@ export function Admin() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // 테마 초기화
+  useTheme();
 
   useEffect(() => {
     fetchUsers();
@@ -39,6 +59,13 @@ export function Admin() {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const stats = {
+    totalUsers: users.length,
+    totalSubmissions: users.reduce((acc, u) => acc + u.totalSubmissions, 0),
+    problemsSolved: users.reduce((acc, u) => acc + u.solvedCount, 0),
+    activeDrafts: users.reduce((acc, u) => acc + u.draftsCount, 0),
+  };
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('ko-KR', {
@@ -51,179 +78,152 @@ export function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-white/5 bg-[#0a0a0b]/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <a href="/" className="text-white/40 hover:text-white transition-colors">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+      <header className="sticky top-0 z-50 h-14 bg-card border-b flex items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" asChild>
+            <a href="/" aria-label="Go back to main page">
+              <ArrowLeft className="h-4 w-4" />
             </a>
-            <div>
-              <h1 className="text-sm font-medium tracking-tight">Admin Console</h1>
-              <p className="text-[10px] text-white/30 tracking-wide">COSLAB Management</p>
-            </div>
+          </Button>
+          <div>
+            <h1 className="text-base font-semibold">Admin Console</h1>
+            <p className="text-xs text-muted-foreground">C-OSINE Management</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <span className="text-emerald-400 text-[10px] font-medium">{users.length} users</span>
-            </div>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">
+            {users.length} users
+          </Badge>
+          <ThemeToggle />
         </div>
       </header>
 
       {/* Main */}
-      <main className="max-w-7xl mx-auto px-4 py-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <StatCard
-            label="Total Users"
-            value={users.length}
-            icon="users"
-            color="blue"
+            title="Total Users"
+            value={stats.totalUsers}
+            variant="primary"
+            icon={<Users className="h-5 w-5" />}
           />
           <StatCard
-            label="Total Submissions"
-            value={users.reduce((acc, u) => acc + u.totalSubmissions, 0)}
-            icon="code"
-            color="purple"
+            title="Total Submissions"
+            value={stats.totalSubmissions}
+            variant="info"
+            icon={<Code className="h-5 w-5" />}
           />
           <StatCard
-            label="Problems Solved"
-            value={users.reduce((acc, u) => acc + u.solvedCount, 0)}
-            icon="check"
-            color="emerald"
+            title="Problems Solved"
+            value={stats.problemsSolved}
+            variant="success"
+            icon={<CheckCircle className="h-5 w-5" />}
           />
           <StatCard
-            label="Active Drafts"
-            value={users.reduce((acc, u) => acc + u.draftsCount, 0)}
-            icon="file"
-            color="amber"
+            title="Active Drafts"
+            value={stats.activeDrafts}
+            variant="warning"
+            icon={<FileText className="h-5 w-5" />}
           />
         </div>
 
-        {/* Search & Table */}
-        <div className="bg-[#111113] rounded-xl border border-white/5 overflow-hidden">
+        {/* Users Table */}
+        <Card className="overflow-hidden">
           {/* Search Bar */}
-          <div className="p-3 border-b border-white/5">
-            <div className="relative">
-              <svg width="14" height="14" className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
+          <div className="p-4 border-b">
+            <div className="relative max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
                 type="text"
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-white/5 border border-white/5 rounded-lg pl-9 pr-3 py-2 text-xs placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                className="pl-9"
+                aria-label="Search users"
               />
             </div>
           </div>
 
           {/* Table */}
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+            <div className="flex items-center justify-center py-16">
+              <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left px-4 py-2.5 text-[10px] font-medium text-white/40 uppercase tracking-wider">User</th>
-                    <th className="text-left px-4 py-2.5 text-[10px] font-medium text-white/40 uppercase tracking-wider">Email</th>
-                    <th className="text-center px-4 py-2.5 text-[10px] font-medium text-white/40 uppercase tracking-wider">Solved</th>
-                    <th className="text-center px-4 py-2.5 text-[10px] font-medium text-white/40 uppercase tracking-wider">Subs</th>
-                    <th className="text-center px-4 py-2.5 text-[10px] font-medium text-white/40 uppercase tracking-wider">Drafts</th>
-                    <th className="text-left px-4 py-2.5 text-[10px] font-medium text-white/40 uppercase tracking-wider">Joined</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="text-center">Solved</TableHead>
+                    <TableHead className="text-center">Submissions</TableHead>
+                    <TableHead className="text-center">Drafts</TableHead>
+                    <TableHead>Joined</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredUsers.map((user, idx) => (
-                    <tr key={user.id} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/10">
-                            <span className="text-[10px] font-medium text-white/80">
+                    <TableRow key={user.id}>
+                      {/* User */}
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary/10 text-primary text-sm">
                               {user.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                            </AvatarFallback>
+                          </Avatar>
                           <div>
-                            <p className="font-medium text-xs">{user.name}</p>
-                            <p className="text-[10px] text-white/30 font-mono">#{idx + 1}</p>
+                            <p className="font-medium text-sm">{user.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">#{idx + 1}</p>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className="text-xs text-white/60 font-mono">{user.email}</span>
-                      </td>
-                      <td className="px-4 py-2.5 text-center">
-                        <span className={`inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                          user.solvedCount > 0
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-white/5 text-white/40'
-                        }`}>
+                      </TableCell>
+
+                      {/* Email */}
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground font-mono">{user.email}</span>
+                      </TableCell>
+
+                      {/* Solved */}
+                      <TableCell className="text-center">
+                        <Badge variant={user.solvedCount > 0 ? 'default' : 'secondary'} className={user.solvedCount > 0 ? 'bg-emerald-600' : ''}>
                           {user.solvedCount}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-center">
-                        <span className="text-xs text-white/60">{user.totalSubmissions}</span>
-                      </td>
-                      <td className="px-4 py-2.5 text-center">
-                        <span className="text-xs text-white/40">{user.draftsCount}</span>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className="text-xs text-white/40">{formatDate(user.createdAt)}</span>
-                      </td>
-                    </tr>
+                        </Badge>
+                      </TableCell>
+
+                      {/* Submissions */}
+                      <TableCell className="text-center">
+                        <span className="text-sm text-muted-foreground">{user.totalSubmissions}</span>
+                      </TableCell>
+
+                      {/* Drafts */}
+                      <TableCell className="text-center">
+                        <span className="text-sm text-muted-foreground">{user.draftsCount}</span>
+                      </TableCell>
+
+                      {/* Joined */}
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</span>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
 
               {filteredUsers.length === 0 && (
-                <div className="text-center py-8 text-white/30 text-xs">
+                <div className="text-center py-12 text-muted-foreground text-sm">
                   No users found
                 </div>
               )}
-            </div>
+            </CardContent>
           )}
-        </div>
+        </Card>
       </main>
-    </div>
-  );
-}
-
-function StatCard({ label, value, icon, color }: {
-  label: string;
-  value: number;
-  icon: 'users' | 'code' | 'check' | 'file';
-  color: 'blue' | 'purple' | 'emerald' | 'amber';
-}) {
-  const colors = {
-    blue: 'from-blue-500/20 to-blue-600/10 border-blue-500/20 text-blue-400',
-    purple: 'from-purple-500/20 to-purple-600/10 border-purple-500/20 text-purple-400',
-    emerald: 'from-emerald-500/20 to-emerald-600/10 border-emerald-500/20 text-emerald-400',
-    amber: 'from-amber-500/20 to-amber-600/10 border-amber-500/20 text-amber-400',
-  };
-
-  const icons = {
-    users: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />,
-    code: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />,
-    check: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />,
-    file: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
-  };
-
-  return (
-    <div className={`bg-gradient-to-br ${colors[color]} rounded-xl border p-3`}>
-      <div className="flex items-center justify-between mb-2">
-        <svg width="16" height="16" className="opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {icons[icon]}
-        </svg>
-      </div>
-      <p className="text-xl font-semibold tracking-tight">{value.toLocaleString()}</p>
-      <p className="text-[10px] text-white/40 mt-0.5">{label}</p>
     </div>
   );
 }

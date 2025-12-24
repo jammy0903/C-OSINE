@@ -1,6 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../stores/store';
 import { loadProblems } from '../services/problems';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/ui/stat-card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Check, Circle, AlertCircle } from 'lucide-react';
 import type { Problem } from '../types';
 
 // Tag color mapping
@@ -52,12 +66,16 @@ function getDifficultyInfo(diff: string) {
   return { color: '#a1a1a6', bg: 'rgba(161, 161, 166, 0.15)', label: diff };
 }
 
+const ITEMS_PER_PAGE = 30;
+const DIFFICULTIES = ['All', 'Bronze', 'Silver', 'Gold', 'Platinum'] as const;
+
 export function ProblemList() {
   const { selectProblem, solvedProblems, attemptedProblems } = useStore();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadProblems()
@@ -82,6 +100,14 @@ export function ProblemList() {
     return matchesSearch && matchesDifficulty;
   });
 
+  const totalPages = Math.ceil(filteredProblems.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProblems = filteredProblems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDifficulty]);
+
   const getUserStatus = (problemId: string): 'solved' | 'attempted' | null => {
     if (solvedProblems.includes(problemId)) return 'solved';
     if (attemptedProblems.includes(problemId)) return 'attempted';
@@ -91,197 +117,221 @@ export function ProblemList() {
   return (
     <div className="h-full flex flex-col gap-4">
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-3 shrink-0">
-        <StatCard title="Total" value={stats.total} color="primary" />
-        <StatCard title="Solved" value={stats.solved} color="success" percent={stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0} />
-        <StatCard title="Attempted" value={stats.attempted} color="warning" />
-        <StatCard title="Remaining" value={stats.remaining} color="info" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+        <StatCard title="Total" value={stats.total} variant="primary" />
+        <StatCard title="Solved" value={stats.solved} variant="success" percent={stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0} />
+        <StatCard title="Attempted" value={stats.attempted} variant="warning" />
+        <StatCard title="Remaining" value={stats.remaining} variant="info" />
       </div>
 
       {/* Table Card */}
-      <div className="flex-1 bg-bg-elevated rounded-xl overflow-hidden flex flex-col min-h-0">
-        {/* Table Header */}
-        <div className="px-5 py-3 border-b border-border flex items-center justify-between shrink-0">
+      <Card className="flex-1 overflow-hidden flex flex-col min-h-0">
+        {/* Header */}
+        <div className="px-4 sm:px-5 py-3 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
           <div className="flex items-center gap-4">
-            <h3 className="text-sm font-medium text-text">Problems</h3>
-            <span className="text-xs text-text-tertiary">{filteredProblems.length} items</span>
+            <h3 className="text-sm font-medium">Problems</h3>
+            <Badge variant="secondary" className="text-xs">
+              {filteredProblems.length} items
+            </Badge>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Difficulty Filter */}
-            <div className="flex items-center gap-1 bg-bg rounded-lg p-1">
-              {['All', 'Bronze', 'Silver', 'Gold', 'Platinum'].map((diff) => (
-                <button
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1 overflow-x-auto">
+              {DIFFICULTIES.map((diff) => (
+                <Button
                   key={diff}
+                  variant={(diff === 'All' && !selectedDifficulty) || selectedDifficulty === diff.toLowerCase() ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-7 px-2.5 text-xs whitespace-nowrap"
                   onClick={() => setSelectedDifficulty(diff === 'All' ? null : diff.toLowerCase())}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                    (diff === 'All' && !selectedDifficulty) || selectedDifficulty === diff.toLowerCase()
-                      ? 'bg-primary text-white'
-                      : 'text-text-secondary hover:text-text hover:bg-bg-hover'
-                  }`}
                 >
                   {diff}
-                </button>
+                </Button>
               ))}
             </div>
             {/* Search */}
             <div className="relative">
-              <svg width="14" height="14" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
                 type="text"
                 placeholder="Search..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-44 bg-bg border border-border rounded-lg pl-9 pr-3 py-1.5 text-sm text-text placeholder-text-muted focus:outline-none focus:border-primary"
+                className="w-full sm:w-44 pl-9 h-8"
+                aria-label="Search problems"
               />
             </div>
           </div>
         </div>
 
-        {/* Table */}
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="flex-1 overflow-auto">
-            <table className="w-full">
-              <thead className="sticky top-0 bg-bg-elevated z-10">
-                <tr className="border-b border-border">
-                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-16">No.</th>
-                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-48">Title</th>
-                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider">Tags</th>
-                  <th className="text-left px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-24">Level</th>
-                  <th className="text-center px-5 py-2.5 text-xs font-medium text-text-tertiary uppercase tracking-wider w-20">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProblems.slice(0, 30).map((problem) => {
-                  const status = getUserStatus(problem.id);
-                  const diffInfo = getDifficultyInfo(problem.difficulty);
-                  return (
-                    <tr
-                      key={problem.id}
-                      onClick={() => selectProblem(problem)}
-                      className="border-b border-border-light hover:bg-bg-hover transition-colors cursor-pointer group"
-                    >
-                      {/* Number */}
-                      <td className="px-5 py-3">
-                        <span className="text-text-tertiary text-sm font-mono">{problem.number}</span>
-                      </td>
-                      {/* Title */}
-                      <td className="px-5 py-3">
-                        <span className="text-text font-medium text-sm group-hover:text-primary transition-colors">
+        {/* Content */}
+        <CardContent className="flex-1 overflow-auto p-0">
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center py-20">
+              <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : (
+            <>
+              <Table>
+                <TableHeader className="sticky top-0 bg-card z-10">
+                  <TableRow>
+                    <TableHead className="w-16">No.</TableHead>
+                    <TableHead className="w-48">Title</TableHead>
+                    <TableHead>Tags</TableHead>
+                    <TableHead className="w-24">Level</TableHead>
+                    <TableHead className="w-20 text-center">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedProblems.map((problem) => {
+                    const status = getUserStatus(problem.id);
+                    const diffInfo = getDifficultyInfo(problem.difficulty);
+                    return (
+                      <TableRow
+                        key={problem.id}
+                        onClick={() => selectProblem(problem)}
+                        className="cursor-pointer group"
+                      >
+                        <TableCell className="font-mono text-muted-foreground">
+                          {problem.number}
+                        </TableCell>
+                        <TableCell className="font-medium group-hover:text-primary transition-colors">
                           {problem.title}
-                        </span>
-                      </td>
-                      {/* Tags - 전체 나열 */}
-                      <td className="px-5 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {problem.tags.map((tag, i) => {
-                            const color = getTagColor(tag, i);
-                            return (
-                              <span
-                                key={i}
-                                className="px-2 py-0.5 rounded text-xs font-medium"
-                                style={{ backgroundColor: color.bg, color: color.text }}
-                              >
-                                {tag}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </td>
-                      {/* Difficulty */}
-                      <td className="px-5 py-3">
-                        <span
-                          className="px-2 py-0.5 rounded text-xs font-medium"
-                          style={{ backgroundColor: diffInfo.bg, color: diffInfo.color }}
-                        >
-                          {diffInfo.label}
-                        </span>
-                      </td>
-                      {/* Status - 아이콘만 */}
-                      <td className="px-5 py-3 text-center">
-                        {status === 'solved' ? (
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-success/15 text-success">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                            </svg>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {problem.tags.map((tag, i) => {
+                              const color = getTagColor(tag, i);
+                              return (
+                                <span
+                                  key={i}
+                                  className="px-2 py-0.5 rounded text-xs font-medium"
+                                  style={{ backgroundColor: color.bg, color: color.text }}
+                                >
+                                  {tag}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="px-2 py-0.5 rounded text-xs font-medium"
+                            style={{ backgroundColor: diffInfo.bg, color: diffInfo.color }}
+                          >
+                            {diffInfo.label}
                           </span>
-                        ) : status === 'attempted' ? (
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-warning/15 text-warning">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
-                            </svg>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-border-dark text-text-muted">
-                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="8" strokeWidth={1.5} />
-                            </svg>
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {status === 'solved' ? (
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/15 text-emerald-500">
+                              <Check className="h-3.5 w-3.5" />
+                            </span>
+                          ) : status === 'attempted' ? (
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500/15 text-amber-500">
+                              <AlertCircle className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-border text-muted-foreground">
+                              <Circle className="h-3 w-3" />
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
 
-            {filteredProblems.length === 0 && (
-              <div className="text-center py-12 text-text-secondary text-sm">
-                No problems found
-              </div>
-            )}
+              {filteredProblems.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground text-sm">
+                  No problems found
+                </div>
+              )}
 
-            {/* Pagination hint */}
-            {filteredProblems.length > 30 && (
-              <div className="px-5 py-3 border-t border-border text-center">
-                <span className="text-xs text-text-tertiary">
-                  Showing 1-30 of {filteredProblems.length} problems
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    Showing {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredProblems.length)} of {filteredProblems.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      aria-label="Go to first page"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Go to previous page"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Prev
+                    </Button>
 
-function StatCard({
-  title,
-  value,
-  color,
-  percent,
-}: {
-  title: string;
-  value: number;
-  color: 'primary' | 'success' | 'warning' | 'info';
-  percent?: number;
-}) {
-  const colorMap = {
-    primary: { bg: 'bg-primary/15', text: 'text-primary', border: 'border-primary/20' },
-    success: { bg: 'bg-success/15', text: 'text-success', border: 'border-success/20' },
-    warning: { bg: 'bg-warning/15', text: 'text-warning', border: 'border-warning/20' },
-    info: { bg: 'bg-info/15', text: 'text-info', border: 'border-info/20' },
-  };
+                    <div className="flex items-center gap-1 mx-2">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? 'default' : 'ghost'}
+                            size="icon"
+                            className="h-8 w-8 text-xs"
+                            onClick={() => setCurrentPage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
 
-  const colors = colorMap[color];
-
-  return (
-    <div className={`${colors.bg} rounded-xl p-4 border ${colors.border}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-text-secondary text-xs font-medium mb-1">{title}</p>
-          <p className={`text-2xl font-semibold ${colors.text}`}>{value.toLocaleString()}</p>
-        </div>
-        {percent !== undefined && (
-          <span className={`text-xs font-medium ${colors.text}`}>{percent}%</span>
-        )}
-      </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Go to next page"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Go to last page"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
