@@ -6,7 +6,6 @@
 export { ProcessMemoryVisualization } from './ProcessMemoryVisualization';
 
 // Components
-export { CPURegistersPanel } from './components/CPURegistersPanel';
 export { ProcessMemoryView } from './components/ProcessMemoryView';
 export { StackDetailView } from './components/StackDetailView';
 export { HeapDetailView } from './components/HeapDetailView';
@@ -52,6 +51,7 @@ export {
   SEGMENT_COLORS,
   MEMORY_ADDRESSES,
   REGISTER_COLORS,
+  POINTER_COLORS,
   BLOCK_STATES,
   LAYOUT,
   DEFAULT_CODE,

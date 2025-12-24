@@ -1,11 +1,13 @@
 /**
  * StackDetailView
  * 스택 메모리 상세 뷰 - 스택 프레임 시각화
+ * 포인터 탭 시 연결된 블록 하이라이트
  */
 
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { MemoryBlock } from '../types';
-import { REGISTER_COLORS, ANIMATION_DURATION, ANIMATION_COLORS } from '../constants';
+import { REGISTER_COLORS, ANIMATION_DURATION, POINTER_COLORS } from '../constants';
 import { formatAddress, isPointerType, sortBlocksByAddress } from '../utils';
 
 interface StackDetailViewProps {
@@ -15,7 +17,10 @@ interface StackDetailViewProps {
   onClose?: () => void;
   changedBlocks?: string[];
   animationSpeed?: 'slow' | 'normal' | 'fast';
+  // 외부에서 힙 블록 전달 (cross-panel 하이라이트용)
+  heapBlocks?: MemoryBlock[];
 }
+
 
 export function StackDetailView({
   blocks,
@@ -24,9 +29,30 @@ export function StackDetailView({
   onClose,
   changedBlocks = [],
   animationSpeed = 'normal',
+  heapBlocks = [],
 }: StackDetailViewProps) {
   const duration = ANIMATION_DURATION[animationSpeed] / 1000;
-  const sortedBlocks = sortBlocksByAddress(blocks, true); // 높은 주소 -> 낮은 주소
+  const sortedBlocks = sortBlocksByAddress(blocks, true);
+
+  // 선택된 포인터 (로컬 상태)
+  const [selectedPointer, setSelectedPointer] = useState<string | null>(null);
+
+  // 모든 블록 (스택 + 힙)
+  const allBlocks = useMemo(() => [...blocks, ...heapBlocks], [blocks, heapBlocks]);
+
+  // 블록이 하이라이트 대상인지 확인
+  const isHighlighted = (block: MemoryBlock) => {
+    if (!selectedPointer) return false;
+    const selectedBlock = allBlocks.find((b) => b.address === selectedPointer);
+    return block.address === selectedPointer || block.address === selectedBlock?.points_to;
+  };
+
+  // 포인터 블록 클릭 핸들러
+  const handlePointerClick = (block: MemoryBlock) => {
+    if (block.points_to) {
+      setSelectedPointer((prev) => (prev === block.address ? null : block.address));
+    }
+  };
 
   return (
     <motion.div
@@ -34,12 +60,13 @@ export function StackDetailView({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className="flex-1 flex flex-col bg-card rounded-xl border border-border overflow-hidden"
+      onClick={() => setSelectedPointer(null)}
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-purple-500/10">
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full bg-purple-500" />
-          <h3 className="text-sm font-medium text-text">Stack Detail</h3>
+          <h3 className="text-sm font-medium text-foreground">Stack Detail</h3>
           <span className="text-xs text-muted-foreground">
             {blocks.length} variables
           </span>
@@ -57,145 +84,110 @@ export function StackDetailView({
         )}
       </div>
 
-      {/* Stack Visualization */}
-      <div className="flex-1 overflow-auto p-4">
-        {/* Column Headers */}
-        <div className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border mb-2">
-          <div className="w-20">Address</div>
-          <div className="w-24">Name</div>
-          <div className="w-16">Type</div>
-          <div className="flex-1">Value</div>
-          <div className="w-12">Ptr</div>
-        </div>
+      {/* Stack Visualization - Excel Style */}
+      <div className="flex-1 overflow-auto p-3">
+        {/* Excel-like Table */}
+        <table className="w-full border-collapse text-xs">
+          {/* Header */}
+          <thead>
+            <tr style={{ backgroundColor: '#e8d5f0' }}>
+              <th className="border border-purple-300 px-3 py-2 text-left font-medium text-purple-800 w-12"></th>
+              <th className="border border-purple-300 px-3 py-2 text-left font-medium text-purple-800">Address</th>
+              <th className="border border-purple-300 px-3 py-2 text-left font-medium text-purple-800">Name</th>
+              <th className="border border-purple-300 px-3 py-2 text-left font-medium text-purple-800">Type</th>
+              <th className="border border-purple-300 px-3 py-2 text-left font-medium text-purple-800">Value</th>
+            </tr>
+          </thead>
+          {/* Body */}
+          <tbody>
+            <AnimatePresence mode="popLayout">
+              {sortedBlocks.map((block, index) => {
+                const isRspHere = block.address === rsp;
+                const isRbpHere = block.address === rbp;
+                const isChanged = changedBlocks.includes(block.address);
+                const isPointer = isPointerType(block.type);
+                const highlighted = isHighlighted(block);
 
-        {/* Stack Blocks */}
-        <div className="space-y-1">
-          <AnimatePresence mode="popLayout">
-            {sortedBlocks.map((block, index) => {
-              const isRspHere = block.address === rsp;
-              const isRbpHere = block.address === rbp;
-              const isChanged = changedBlocks.includes(block.address);
-              const isPointer = isPointerType(block.type);
+                // 행 배경색 결정
+                let rowBg = index % 2 === 0 ? '#faf5ff' : '#f3e8ff';
+                if (isChanged && !highlighted) rowBg = '#ede9fe';
+                if (highlighted) rowBg = POINTER_COLORS.bg;
 
-              return (
-                <motion.div
-                  key={block.address}
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration, delay: index * 0.02 }}
-                  className={`
-                    relative flex items-center gap-2 px-3 py-2 rounded-lg
-                    border transition-colors
-                    ${isChanged ? 'border-primary bg-primary/10' : 'border-border bg-background'}
-                    ${isPointer ? 'border-l-4 border-l-info' : ''}
-                  `}
-                >
-                  {/* RSP/RBP Indicator */}
-                  {(isRspHere || isRbpHere) && (
-                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
-                      {isRspHere && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="flex items-center gap-1"
-                        >
-                          <span
-                            className="text-xs font-bold"
-                            style={{ color: REGISTER_COLORS.rsp }}
-                          >
-                            RSP
-                          </span>
-                          <div
-                            className="w-0 h-0 border-t-4 border-b-4 border-l-6 border-transparent"
-                            style={{ borderLeftColor: REGISTER_COLORS.rsp }}
-                          />
-                        </motion.div>
-                      )}
-                      {isRbpHere && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="flex items-center gap-1"
-                        >
-                          <span
-                            className="text-xs font-bold"
-                            style={{ color: REGISTER_COLORS.rbp }}
-                          >
-                            RBP
-                          </span>
-                          <div
-                            className="w-0 h-0 border-t-4 border-b-4 border-l-6 border-transparent"
-                            style={{ borderLeftColor: REGISTER_COLORS.rbp }}
-                          />
-                        </motion.div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Address */}
-                  <div className="w-20 font-mono text-xs text-muted-foreground">
-                    {formatAddress(block.address, true)}
-                  </div>
-
-                  {/* Name */}
-                  <div className="w-24 font-mono text-sm text-foreground font-medium truncate">
-                    {block.name}
-                  </div>
-
-                  {/* Type */}
-                  <div className="w-16 text-xs text-muted-foreground truncate">
-                    {block.type}
-                  </div>
-
-                  {/* Value */}
-                  <motion.div
-                    key={block.value}
-                    initial={isChanged ? { scale: 1.1, color: ANIMATION_COLORS.highlight } : {}}
-                    animate={{ scale: 1, color: ANIMATION_COLORS.text }}
-                    transition={{ duration: 0.3 }}
-                    className="flex-1 font-mono text-sm text-foreground"
+                return (
+                  <motion.tr
+                    key={block.address}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration, delay: index * 0.02 }}
+                    style={{ backgroundColor: rowBg }}
+                    className={`${isPointer ? 'cursor-pointer hover:bg-purple-100' : ''}`}
+                    onClick={(e) => {
+                      if (isPointer) {
+                        e.stopPropagation();
+                        handlePointerClick(block);
+                      }
+                    }}
                   >
-                    {isPointer && block.points_to ? (
-                      <span className="text-info">
-                        → {formatAddress(block.points_to, true)}
-                      </span>
-                    ) : (
-                      block.value
-                    )}
-                  </motion.div>
+                    {/* RSP/RBP Indicator */}
+                    <td className="border border-purple-200 px-2 py-2 text-right font-mono">
+                      {isRbpHere && (
+                        <span className="text-xs font-bold" style={{ color: REGISTER_COLORS.rbp }}>RBP→</span>
+                      )}
+                      {isRspHere && (
+                        <span className="text-xs font-bold" style={{ color: REGISTER_COLORS.rsp }}>RSP→</span>
+                      )}
+                    </td>
 
-                  {/* Pointer Indicator */}
-                  <div className="w-12 flex justify-center">
-                    {isPointer && (
-                      <div className="w-2 h-2 rounded-full bg-info" title="Pointer" />
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+                    {/* Address */}
+                    <td className="border border-purple-200 px-3 py-2 font-mono text-gray-600">
+                      {formatAddress(block.address, true)}
+                    </td>
+
+                    {/* Name */}
+                    <td className="border border-purple-200 px-3 py-2 font-mono font-medium text-purple-900">
+                      {block.name}
+                    </td>
+
+                    {/* Type */}
+                    <td className="border border-purple-200 px-3 py-2 text-gray-500">
+                      {block.type}
+                    </td>
+
+                    {/* Value */}
+                    <td className="border border-purple-200 px-3 py-2 font-mono text-gray-800">
+                      {isPointer && block.points_to ? (
+                        <span className="flex items-center gap-1">
+                          <span style={{ color: POINTER_COLORS.main }}>→</span>
+                          <span style={{ color: highlighted ? POINTER_COLORS.main : undefined }}>
+                            {formatAddress(block.points_to, true)}
+                          </span>
+                        </span>
+                      ) : (
+                        block.value
+                      )}
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </AnimatePresence>
+          </tbody>
+        </table>
 
         {/* Empty State */}
         {blocks.length === 0 && (
-          <div className="flex items-center justify-center h-40 text-muted-foreground">
-            <div className="text-center">
-              <div className="text-3xl mb-2">📚</div>
-              <div className="text-sm">Stack is empty</div>
-            </div>
+          <div className="flex items-center justify-center h-32 text-muted-foreground border border-purple-200 rounded mt-2" style={{ backgroundColor: '#faf5ff' }}>
+            <p className="text-sm">Stack is empty</p>
           </div>
         )}
       </div>
 
-      {/* Footer - Stack Growth Direction */}
-      <div className="px-4 py-2 border-t border-border bg-background flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <span>Higher Address</span>
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-        <span>Lower Address (Stack grows down)</span>
+      {/* Footer */}
+      <div className="px-4 py-2 border-t border-purple-200 flex items-center justify-center gap-2 text-xs text-purple-600" style={{ backgroundColor: '#f3e8ff' }}>
+        <span>High Addr</span>
+        <span>↓</span>
+        <span>Low Addr (grows down)</span>
       </div>
     </motion.div>
   );

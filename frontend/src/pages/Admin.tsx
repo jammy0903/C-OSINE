@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowLeft, Search, Users, Code, CheckCircle, FileText } from 'lucide-react';
+import { ArrowLeft, Search, Users, Code, CheckCircle, FileText, RefreshCw } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -43,6 +43,7 @@ export function Admin() {
   }, []);
 
   async function fetchUsers() {
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/users`);
       const data = await res.json();
@@ -80,21 +81,35 @@ export function Admin() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 h-14 bg-card border-b flex items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <a href="/" aria-label="Go back to main page">
+      <header className="sticky top-0 z-50 h-12 bg-card/80 backdrop-blur-sm border-b border-border/50 flex items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild className="gap-1.5">
+            <a href="/">
               <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back</span>
             </a>
           </Button>
-          <div>
-            <h1 className="text-base font-semibold">Admin Console</h1>
-            <p className="text-xs text-muted-foreground">C-OSINE Management</p>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+              <span className="text-white font-bold text-xs">A</span>
+            </div>
+            <span className="font-semibold text-sm">Admin Console</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchUsers}
+            disabled={loading}
+            className="gap-1.5"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 text-xs">
             {users.length} users
           </Badge>
           <ThemeToggle />

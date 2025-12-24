@@ -70,7 +70,7 @@ const ITEMS_PER_PAGE = 30;
 const DIFFICULTIES = ['All', 'Bronze', 'Silver', 'Gold', 'Platinum'] as const;
 
 export function ProblemList() {
-  const { selectProblem, solvedProblems, attemptedProblems } = useStore();
+  const { selectProblem, solvedProblems, attemptedProblems, user } = useStore();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -116,6 +116,25 @@ export function ProblemList() {
 
   return (
     <div className="h-full flex flex-col gap-4">
+      {/* Welcome Banner (when not logged in) */}
+      {!user && (
+        <div className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-cyan-500/10 rounded-xl p-4 border border-primary/20 shrink-0">
+          <div className="flex items-center gap-4">
+            <img
+              src="/logo.png"
+              alt="C-ode to you"
+              className="w-16 h-16 rounded-xl shadow-lg"
+            />
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-foreground">Welcome to C-ode to you!</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                AI 튜터와 함께 C 프로그래밍을 배워보세요. 로그인하면 진행 상황을 저장할 수 있어요.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
         <StatCard title="Total" value={stats.total} variant="primary" />

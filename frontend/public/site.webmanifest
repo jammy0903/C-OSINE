@@ -1,6 +1,6 @@
 {
-  "name": "C-OSINE - C & Operating System Interactive Learning Environment",
-  "short_name": "C-OSINE",
+  "name": "C-ode to you - Interactive C Programming Learning Platform",
+  "short_name": "C-ode to you",
   "description": "AI 튜터와 함께 C 프로그래밍과 운영체제를 배우는 인터랙티브 학습 플랫폼",
   "start_url": "/",
   "display": "standalone",

@@ -7,10 +7,10 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="secondary"
+      variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="relative h-9 w-9"
+      className="relative h-8 w-8"
       aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
     >
       {/* Sun Icon */}

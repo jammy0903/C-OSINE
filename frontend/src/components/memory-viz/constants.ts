@@ -66,6 +66,14 @@ export const ANIMATION_COLORS = {
   text: '#ffffff',      // foreground (dark mode)
 } as const;
 
+// 포인터 연결 색상 (디자인 doc: --pointer-arrow)
+export const POINTER_COLORS = {
+  main: '#f97316',      // orange-500
+  bg: 'rgba(249, 115, 22, 0.15)',
+  border: 'rgba(249, 115, 22, 0.6)',
+  glow: 'rgba(249, 115, 22, 0.4)',
+} as const;
+
 // 블록 상태 색상
 export const BLOCK_STATES = {
   normal: 'border bg-muted',

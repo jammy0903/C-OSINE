@@ -1,11 +1,13 @@
 /**
  * HeapDetailView
  * 힙 메모리 상세 뷰 - malloc 블록 시각화
+ * 포인터로 참조되는 블록 하이라이트 지원
  */
 
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { MemoryBlock } from '../types';
-import { ANIMATION_DURATION } from '../constants';
+import { ANIMATION_DURATION, POINTER_COLORS } from '../constants';
 import { formatAddress, sortBlocksByAddress } from '../utils';
 
 interface HeapDetailViewProps {
@@ -13,16 +15,38 @@ interface HeapDetailViewProps {
   onClose?: () => void;
   changedBlocks?: string[];
   animationSpeed?: 'slow' | 'normal' | 'fast';
+  // 외부에서 스택 블록 전달 (cross-panel 하이라이트용)
+  stackBlocks?: MemoryBlock[];
 }
+
 
 export function HeapDetailView({
   blocks,
   onClose,
   changedBlocks = [],
   animationSpeed = 'normal',
+  stackBlocks = [],
 }: HeapDetailViewProps) {
   const duration = ANIMATION_DURATION[animationSpeed] / 1000;
-  const sortedBlocks = sortBlocksByAddress(blocks, false); // 낮은 주소 -> 높은 주소
+  const sortedBlocks = sortBlocksByAddress(blocks, false);
+
+  // 선택된 힙 블록 (어떤 포인터가 이 블록을 가리키는지 보기 위함)
+  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+
+  // 이 힙 블록을 가리키는 포인터 찾기
+  const getPointersToBlock = (blockAddress: string) => {
+    return stackBlocks.filter((b) => b.points_to === blockAddress);
+  };
+
+  // 블록이 하이라이트 대상인지 확인
+  const isHighlighted = (block: MemoryBlock) => {
+    return block.address === selectedBlock;
+  };
+
+  // 힙 블록 클릭 핸들러
+  const handleBlockClick = (block: MemoryBlock) => {
+    setSelectedBlock((prev) => (prev === block.address ? null : block.address));
+  };
 
   return (
     <motion.div
@@ -30,6 +54,7 @@ export function HeapDetailView({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className="flex-1 flex flex-col bg-card rounded-xl border border-border overflow-hidden"
+      onClick={() => setSelectedBlock(null)}
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-emerald-500/10">
@@ -53,123 +78,103 @@ export function HeapDetailView({
         )}
       </div>
 
-      {/* Heap Visualization */}
-      <div className="flex-1 overflow-auto p-4">
+      {/* Heap Visualization - Excel Style */}
+      <div className="flex-1 overflow-auto p-3">
         {blocks.length > 0 ? (
-          <div className="space-y-2">
-            <AnimatePresence mode="popLayout">
-              {sortedBlocks.map((block, index) => {
-                const isChanged = changedBlocks.includes(block.address);
-                const isFreed = block.value === 'freed';
+          <table className="w-full border-collapse text-xs">
+            {/* Header */}
+            <thead>
+              <tr style={{ backgroundColor: '#d1fae5' }}>
+                <th className="border border-emerald-300 px-3 py-2 text-left font-medium text-emerald-800">Address</th>
+                <th className="border border-emerald-300 px-3 py-2 text-left font-medium text-emerald-800">Name</th>
+                <th className="border border-emerald-300 px-3 py-2 text-left font-medium text-emerald-800">Type</th>
+                <th className="border border-emerald-300 px-3 py-2 text-left font-medium text-emerald-800">Size</th>
+                <th className="border border-emerald-300 px-3 py-2 text-left font-medium text-emerald-800">Value</th>
+                <th className="border border-emerald-300 px-3 py-2 text-left font-medium text-emerald-800">Refs</th>
+              </tr>
+            </thead>
+            {/* Body */}
+            <tbody>
+              <AnimatePresence mode="popLayout">
+                {sortedBlocks.map((block, index) => {
+                  const isChanged = changedBlocks.includes(block.address);
+                  const isFreed = block.value === 'freed';
+                  const highlighted = isHighlighted(block);
+                  const pointers = getPointersToBlock(block.address);
 
-                return (
-                  <motion.div
-                    key={block.address}
-                    layout
-                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                    animate={{ opacity: isFreed ? 0.5 : 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                    transition={{ duration, delay: index * 0.05 }}
-                    className={`
-                      relative rounded-lg border-2 overflow-hidden
-                      ${isFreed
-                        ? 'border-dashed border-danger/50 bg-danger/5'
-                        : isChanged
-                          ? 'border-primary bg-primary/10'
-                          : 'border-emerald-500/50 bg-emerald-500/10'
-                      }
-                    `}
-                  >
-                    {/* Block Header */}
-                    <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {formatAddress(block.address, false)}
-                        </span>
-                        <span className="font-mono text-sm font-medium text-emerald-400">
-                          {block.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          {block.size} bytes
-                        </span>
-                        {isFreed && (
-                          <span className="px-2 py-0.5 text-xs rounded bg-danger/20 text-danger">
-                            FREED
+                  // 행 배경색 결정
+                  let rowBg = index % 2 === 0 ? '#f0fdf4' : '#dcfce7';
+                  if (isFreed) rowBg = '#fee2e2';
+                  if (isChanged && !highlighted) rowBg = '#d1fae5';
+                  if (highlighted) rowBg = POINTER_COLORS.bg;
+
+                  return (
+                    <motion.tr
+                      key={block.address}
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: isFreed ? 0.6 : 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration, delay: index * 0.02 }}
+                      style={{ backgroundColor: rowBg }}
+                      className="cursor-pointer hover:bg-emerald-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBlockClick(block);
+                      }}
+                    >
+                      {/* Address */}
+                      <td className="border border-emerald-200 px-3 py-2 font-mono text-gray-600">
+                        {formatAddress(block.address, true)}
+                      </td>
+
+                      {/* Name */}
+                      <td className="border border-emerald-200 px-3 py-2 font-mono font-medium text-emerald-900">
+                        {block.name}
+                        {isFreed && <span className="ml-1 text-red-500">(freed)</span>}
+                      </td>
+
+                      {/* Type */}
+                      <td className="border border-emerald-200 px-3 py-2 text-gray-500">
+                        {block.type}
+                      </td>
+
+                      {/* Size */}
+                      <td className="border border-emerald-200 px-3 py-2 font-mono text-gray-600">
+                        {block.size}B
+                      </td>
+
+                      {/* Value */}
+                      <td className="border border-emerald-200 px-3 py-2 font-mono text-gray-800">
+                        {block.value}
+                      </td>
+
+                      {/* Pointer References */}
+                      <td className="border border-emerald-200 px-3 py-2 text-gray-500">
+                        {pointers.length > 0 ? (
+                          <span style={{ color: POINTER_COLORS.main }}>
+                            ← {pointers.map((p) => p.name).join(', ')}
                           </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Block Content */}
-                    <div className="px-3 py-3">
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <div className="text-xs text-muted-foreground mb-1">Type</div>
-                          <div className="font-mono text-sm text-foreground">{block.type}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground mb-1">Value</div>
-                          <div className="font-mono text-sm text-foreground">{block.value}</div>
-                        </div>
-                      </div>
-
-                      {/* Memory Bytes Visualization */}
-                      {block.bytes && block.bytes.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/10">
-                          <div className="text-xs text-muted-foreground mb-2">Memory Content</div>
-                          <div className="flex flex-wrap gap-1">
-                            {block.bytes.slice(0, 16).map((byte, idx) => (
-                              <div
-                                key={idx}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-black/30 font-mono text-xs text-muted-foreground"
-                              >
-                                {byte.toString(16).padStart(2, '0').toUpperCase()}
-                              </div>
-                            ))}
-                            {block.bytes.length > 16 && (
-                              <div className="w-6 h-6 flex items-center justify-center text-muted-foreground text-xs">
-                                ...
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Size Bar */}
-                    <div className="h-1 bg-emerald-500/30">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: '100%' }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        className={`h-full ${isFreed ? 'bg-danger/50' : 'bg-emerald-500'}`}
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
+                        ) : '-'}
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </AnimatePresence>
+            </tbody>
+          </table>
         ) : (
-          <div className="flex items-center justify-center h-40 text-muted-foreground">
-            <div className="text-center">
-              <div className="text-3xl mb-2">🗄️</div>
-              <div className="text-sm">No heap allocations</div>
-              <div className="text-xs mt-1">Use malloc() to allocate memory</div>
-            </div>
+          <div className="flex items-center justify-center h-32 text-muted-foreground border border-emerald-200 rounded" style={{ backgroundColor: '#f0fdf4' }}>
+            <p className="text-sm">No heap allocations (use malloc)</p>
           </div>
         )}
       </div>
 
-      {/* Footer - Heap Growth Direction */}
-      <div className="px-4 py-2 border-t border-border bg-background flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <span>Lower Address</span>
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-        </svg>
-        <span>Higher Address (Heap grows up)</span>
+      {/* Footer */}
+      <div className="px-4 py-2 border-t border-emerald-200 flex items-center justify-center gap-2 text-xs text-emerald-600" style={{ backgroundColor: '#d1fae5' }}>
+        <span>Low Addr</span>
+        <span>↑</span>
+        <span>High Addr (grows up)</span>
       </div>
     </motion.div>
   );

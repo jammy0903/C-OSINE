@@ -178,3 +178,63 @@ input:focus, textarea:focus, button:focus {
     @apply bg-background text-foreground;
   }
 }
+
+/* ===== Navigation Glow Effect ===== */
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item:hover .nav-icon,
+.nav-item:hover .nav-label,
+.nav-item.active .nav-icon,
+.nav-item.active .nav-label {
+  filter: drop-shadow(0 0 6px var(--primary));
+}
+
+.nav-item:hover .nav-label,
+.nav-item.active .nav-label {
+  text-shadow: 0 0 8px var(--primary);
+}
+
+/* 하단 언더라인 */
+.nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 9999px;
+  transform: scaleX(0);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover::after {
+  transform: scaleX(0.7);
+  opacity: 0.5;
+}
+
+.nav-item.active::after {
+  transform: scaleX(1);
+  opacity: 1;
+  box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+}
