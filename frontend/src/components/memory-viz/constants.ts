@@ -55,9 +55,15 @@ export const MEMORY_ADDRESSES = {
 
 // 레지스터 색상
 export const REGISTER_COLORS = {
-  rsp: '#ef4444', // red
-  rbp: '#22c55e', // green
-  rip: '#3b82f6', // blue
+  rsp: '#ef4444', // red-500
+  rbp: '#22c55e', // green-500
+  rip: '#3b82f6', // blue-500
+} as const;
+
+// 애니메이션 색상 (Framer Motion용)
+export const ANIMATION_COLORS = {
+  highlight: '#6366f1', // primary (indigo-500)
+  text: '#ffffff',      // foreground (dark mode)
 } as const;
 
 // 블록 상태 색상

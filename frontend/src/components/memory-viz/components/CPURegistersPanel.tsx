@@ -4,7 +4,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { REGISTER_COLORS, ANIMATION_DURATION } from '../constants';
+import { REGISTER_COLORS, ANIMATION_DURATION, ANIMATION_COLORS } from '../constants';
 import { formatAddress } from '../utils';
 
 interface CPURegistersPanelProps {
@@ -67,8 +67,8 @@ export function CPURegistersPanel({
           <div className="text-xs text-muted-foreground mb-1">Current Line</div>
           <motion.div
             key={currentLine}
-            initial={{ scale: 1.2, color: '#6366f1' }}
-            animate={{ scale: 1, color: '#ffffff' }}
+            initial={{ scale: 1.2, color: ANIMATION_COLORS.highlight }}
+            animate={{ scale: 1, color: ANIMATION_COLORS.text }}
             className="text-2xl font-mono font-bold"
           >
             {currentLine}

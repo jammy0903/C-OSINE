@@ -17,28 +17,28 @@ import {
 import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Check, Circle, AlertCircle } from 'lucide-react';
 import type { Problem } from '../types';
 
-// Tag color mapping
-const TAG_COLORS: Record<string, { bg: string; text: string }> = {
-  '구현': { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' },
-  '시뮬레이션': { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' },
-  '브루트포스': { bg: 'rgba(248, 113, 113, 0.15)', text: '#f87171' },
-  '완전탐색': { bg: 'rgba(248, 113, 113, 0.15)', text: '#f87171' },
-  '수학': { bg: 'rgba(251, 191, 36, 0.15)', text: '#fbbf24' },
-  '문자열': { bg: 'rgba(52, 211, 153, 0.15)', text: '#34d399' },
-  '자료구조': { bg: 'rgba(34, 211, 238, 0.15)', text: '#22d3ee' },
-  '정렬': { bg: 'rgba(251, 146, 60, 0.15)', text: '#fb923c' },
-  '탐색': { bg: 'rgba(244, 114, 182, 0.15)', text: '#f472b6' },
-  'dp': { bg: 'rgba(167, 139, 250, 0.15)', text: '#a78bfa' },
-  '그리디': { bg: 'rgba(163, 230, 53, 0.15)', text: '#a3e635' },
-  '그래프': { bg: 'rgba(45, 212, 191, 0.15)', text: '#2dd4bf' },
+// Tag color mapping (Tailwind classes)
+const TAG_COLORS: Record<string, string> = {
+  '구현': 'bg-indigo-500/15 text-indigo-400',
+  '시뮬레이션': 'bg-indigo-500/15 text-indigo-400',
+  '브루트포스': 'bg-red-400/15 text-red-400',
+  '완전탐색': 'bg-red-400/15 text-red-400',
+  '수학': 'bg-amber-400/15 text-amber-400',
+  '문자열': 'bg-emerald-400/15 text-emerald-400',
+  '자료구조': 'bg-cyan-400/15 text-cyan-400',
+  '정렬': 'bg-orange-400/15 text-orange-400',
+  '탐색': 'bg-pink-400/15 text-pink-400',
+  'dp': 'bg-violet-400/15 text-violet-400',
+  '그리디': 'bg-lime-400/15 text-lime-400',
+  '그래프': 'bg-teal-400/15 text-teal-400',
 };
 
 const FALLBACK_COLORS = [
-  { bg: 'rgba(139, 92, 246, 0.15)', text: '#8b5cf6' },
-  { bg: 'rgba(14, 165, 233, 0.15)', text: '#0ea5e9' },
+  'bg-purple-500/15 text-purple-400',
+  'bg-sky-500/15 text-sky-400',
 ];
 
-function getTagColor(tag: string, index: number) {
+function getTagColor(tag: string, index: number): string {
   const lowerTag = tag.toLowerCase();
   for (const [key, value] of Object.entries(TAG_COLORS)) {
     if (lowerTag.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerTag)) {
@@ -48,22 +48,22 @@ function getTagColor(tag: string, index: number) {
   return FALLBACK_COLORS[index % FALLBACK_COLORS.length];
 }
 
-// Difficulty config
-const DIFFICULTY_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
-  bronze: { color: '#d97706', bg: 'rgba(217, 119, 6, 0.15)', label: 'Bronze' },
-  silver: { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.15)', label: 'Silver' },
-  gold: { color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)', label: 'Gold' },
-  platinum: { color: '#34d399', bg: 'rgba(52, 211, 153, 0.15)', label: 'Platinum' },
-  diamond: { color: '#22d3ee', bg: 'rgba(34, 211, 238, 0.15)', label: 'Diamond' },
-  ruby: { color: '#f87171', bg: 'rgba(248, 113, 113, 0.15)', label: 'Ruby' },
+// Difficulty config (Tailwind classes)
+const DIFFICULTY_CONFIG: Record<string, { className: string; label: string }> = {
+  bronze: { className: 'bg-amber-600/15 text-amber-600', label: 'Bronze' },
+  silver: { className: 'bg-slate-400/15 text-slate-400', label: 'Silver' },
+  gold: { className: 'bg-amber-400/15 text-amber-400', label: 'Gold' },
+  platinum: { className: 'bg-emerald-400/15 text-emerald-400', label: 'Platinum' },
+  diamond: { className: 'bg-cyan-400/15 text-cyan-400', label: 'Diamond' },
+  ruby: { className: 'bg-red-400/15 text-red-400', label: 'Ruby' },
 };
 
-function getDifficultyInfo(diff: string) {
+function getDifficultyInfo(diff: string): { className: string; label: string } {
   const lower = diff.toLowerCase();
   for (const [key, value] of Object.entries(DIFFICULTY_CONFIG)) {
     if (lower.includes(key)) return value;
   }
-  return { color: '#a1a1a6', bg: 'rgba(161, 161, 166, 0.15)', label: diff };
+  return { className: 'bg-muted text-muted-foreground', label: diff };
 }
 
 const ITEMS_PER_PAGE = 30;
@@ -200,25 +200,18 @@ export function ProblemList() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            {problem.tags.map((tag, i) => {
-                              const color = getTagColor(tag, i);
-                              return (
-                                <span
-                                  key={i}
-                                  className="px-2 py-0.5 rounded text-xs font-medium"
-                                  style={{ backgroundColor: color.bg, color: color.text }}
-                                >
-                                  {tag}
-                                </span>
-                              );
-                            })}
+                            {problem.tags.map((tag, i) => (
+                              <span
+                                key={i}
+                                className={`px-2 py-0.5 rounded text-xs font-medium ${getTagColor(tag, i)}`}
+                              >
+                                {tag}
+                              </span>
+                            ))}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span
-                            className="px-2 py-0.5 rounded text-xs font-medium"
-                            style={{ backgroundColor: diffInfo.bg, color: diffInfo.color }}
-                          >
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${diffInfo.className}`}>
                             {diffInfo.label}
                           </span>
                         </TableCell>

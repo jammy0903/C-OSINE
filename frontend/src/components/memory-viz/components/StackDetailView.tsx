@@ -5,7 +5,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import type { MemoryBlock } from '../types';
-import { REGISTER_COLORS, ANIMATION_DURATION } from '../constants';
+import { REGISTER_COLORS, ANIMATION_DURATION, ANIMATION_COLORS } from '../constants';
 import { formatAddress, isPointerType, sortBlocksByAddress } from '../utils';
 
 interface StackDetailViewProps {
@@ -47,9 +47,10 @@ export function StackDetailView({
         {onClose && (
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foregroundtransition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Close stack detail view"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -151,10 +152,10 @@ export function StackDetailView({
                   {/* Value */}
                   <motion.div
                     key={block.value}
-                    initial={isChanged ? { scale: 1.1, color: '#6366f1' } : {}}
-                    animate={{ scale: 1, color: '#ffffff' }}
+                    initial={isChanged ? { scale: 1.1, color: ANIMATION_COLORS.highlight } : {}}
+                    animate={{ scale: 1, color: ANIMATION_COLORS.text }}
                     transition={{ duration: 0.3 }}
-                    className="flex-1 font-mono text-sm text-text"
+                    className="flex-1 font-mono text-sm text-foreground"
                   >
                     {isPointer && block.points_to ? (
                       <span className="text-info">

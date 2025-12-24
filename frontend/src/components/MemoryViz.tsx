@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import Xarrow, { Xwrapper } from 'react-xarrows';
 import { traceCode, type Step, type MemoryBlock } from '../services/tracer';
+import { ANIMATION_COLORS } from './memory-viz/constants';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -310,7 +311,7 @@ function MemoryGrid({ stack, heap }: { stack: MemoryBlock[]; heap: MemoryBlock[]
           key={idx}
           start={conn.from}
           end={conn.to}
-          color="#6366f1"
+          color={ANIMATION_COLORS.highlight}
           strokeWidth={2}
           headSize={4}
           curveness={0.5}

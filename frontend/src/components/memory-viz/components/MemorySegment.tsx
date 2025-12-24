@@ -5,7 +5,7 @@
 
 import { motion } from 'framer-motion';
 import type { SegmentType, MemoryBlock } from '../types';
-import { SEGMENT_COLORS } from '../constants';
+import { SEGMENT_COLORS, REGISTER_COLORS } from '../constants';
 
 interface MemorySegmentProps {
   type: SegmentType;
@@ -90,12 +90,12 @@ export function MemorySegment({
           <div
             className="w-0 h-0 border-t-4 border-b-4 border-r-8 border-transparent"
             style={{
-              borderRightColor: showPointer === 'rsp' ? '#ef4444' : '#22c55e',
+              borderRightColor: showPointer === 'rsp' ? REGISTER_COLORS.rsp : REGISTER_COLORS.rbp,
             }}
           />
           <span
             className="text-xs font-bold"
-            style={{ color: showPointer === 'rsp' ? '#ef4444' : '#22c55e' }}
+            style={{ color: showPointer === 'rsp' ? REGISTER_COLORS.rsp : REGISTER_COLORS.rbp }}
           >
             {showPointer.toUpperCase()}
           </span>
