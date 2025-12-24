@@ -102,6 +102,8 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
     await fs.writeFile(inputPath, stdin);
 
     // Docker 명령어 구성
+    // 쉘 명령어는 따옴표로 감싸야 함
+    const shellCmd = `cp /code/main.c /tmp/main.c && gcc -o /tmp/a.out /tmp/main.c 2>&1 && timeout ${timeout}s /tmp/a.out < /code/input.txt`;
     const dockerCmd = [
       'docker', 'run',
       '--rm',
@@ -110,13 +112,13 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
       '--cpus', '0.5',               // CPU 제한
       '--pids-limit', '50',          // 프로세스 수 제한
       '--read-only',                 // 읽기 전용
-      '--tmpfs', '/tmp:size=10m',    // 쓰기용 tmpfs
+      '--tmpfs', '/tmp:size=10m,exec', // 쓰기용 tmpfs (exec 권한 필요)
       '--security-opt', 'no-new-privileges:true',
       '-v', `${tmpDir}:/code:ro`,    // 코드 마운트 (읽기 전용)
       '-w', '/tmp',
       'gcc:latest',
       '/bin/sh', '-c',
-      `cp /code/main.c /tmp/main.c && gcc -o /tmp/a.out /tmp/main.c 2>&1 && timeout ${timeout}s /tmp/a.out < /code/input.txt`
+      `"${shellCmd}"`
     ].join(' ');
 
     try {
