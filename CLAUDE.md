@@ -220,26 +220,26 @@ Track per-user:
 
 ### Frontend
 
-- React
-- Recoil (state)
-- TypeScript
-- Tailwind
+- React 18 + TypeScript
+- Zustand (state management)
+- Tailwind CSS + shadcn/ui
 - Monaco Editor (C code input)
-- D3.js or custom canvas for visualization
+- Framer Motion (animations)
+- Zod (runtime validation)
+- Vitest + Playwright (testing)
 
 ### Backend
 
-- FastAPI
-- Python
-- Uvicorn
-- pydantic
-- Docker/WSL sandbox
+- Node.js + Express + TypeScript
+- Prisma (SQLite)
+- Zod (schema validation)
+- Docker sandbox (gcc execution)
 
 ### Execution Layer
 
 - gcc (compilation)
-- linux container with resource limits
-- isolated file system
+- Docker container with resource limits
+- Isolated network + filesystem
 
 ---
 
@@ -300,27 +300,46 @@ Everything else can be built incrementally.
 
 ---
 
-## 12. File Structure (Suggested)
+## 12. Project Structure
 
 ```
-/backend
-  ├── main.py
-  ├── ai/
-  │     └── handler.py
-  ├── runner/
-  │     └── c_runner.py
-  ├── os/
-  │     └── simulator.py
-  ├── tracking/
-  │     └── progress.py
+backend-node/
+├── src/
+│   ├── config/
+│   │   └── env.ts              # Zod schema for all env vars
+│   ├── modules/
+│   │   ├── c/
+│   │   │   ├── executor.ts     # Docker-based C execution
+│   │   │   └── routes.ts
+│   │   └── memory/
+│   │       ├── simulator.ts    # Memory trace simulation
+│   │       └── handlers/       # Modular operation handlers
+│   └── app.ts
+├── prisma/
+│   └── schema.prisma
+└── .env.example
 
-/frontend
-  ├── src/
-  │     ├── components/
-  │     ├── pages/
-  │     ├── visualizers/
-  │     └── api/
-  ├── public/
+frontend/
+├── src/
+│   ├── config/
+│   │   └── env.ts              # Zod schema for all env vars
+│   ├── features/               # Feature-based modules
+│   │   ├── chat/               # AI tutor chat
+│   │   ├── memory/             # Memory visualization
+│   │   │   └── memory-viz/
+│   │   └── problems/           # Problem list + code editor
+│   ├── components/             # Shared UI components
+│   │   └── ui/                 # shadcn/ui components
+│   ├── layouts/                # Page layouts
+│   ├── pages/                  # Route pages
+│   ├── services/               # API clients
+│   ├── stores/                 # Zustand stores
+│   └── hooks/                  # Custom React hooks
+├── tests/
+│   ├── unit/
+│   ├── component/
+│   └── e2e/
+└── .env.example
 ```
 
 ---
@@ -345,3 +364,123 @@ Everything else can be built incrementally.
 | File | Purpose |
 |------|---------|
 | `docs/syntax-reference.md` | JS/TS/React syntax concepts already explained to user. Check before re-explaining. |
+
+---
+
+## 16. Development Workflow
+
+### Adding Environment Variables
+
+All configuration is centralized using **Zod schemas**. Never use raw `process.env` or `import.meta.env`.
+
+**Backend** (`backend-node/src/config/env.ts`):
+```typescript
+// 1. Add to schema
+const envSchema = z.object({
+  // ... existing
+  NEW_VAR: z.string().default('default-value'),
+});
+
+// 2. Use in code
+import { env } from '../config/env';
+console.log(env.NEW_VAR);  // Type-safe!
+```
+
+**Frontend** (`frontend/src/config/env.ts`):
+```typescript
+// 1. Add to schema (must be VITE_ prefixed)
+const envSchema = z.object({
+  // ... existing
+  VITE_NEW_VAR: z.string().default('default'),
+});
+
+// 2. Add to getEnv() mapping
+VITE_NEW_VAR: import.meta.env.VITE_NEW_VAR,
+
+// 3. Use in code
+import { env } from '../config/env';
+console.log(env.VITE_NEW_VAR);
+```
+
+**Remember**: Update `.env.example` files when adding new variables.
+
+---
+
+### Adding a New Feature
+
+Follow the **feature-based** module pattern:
+
+```
+frontend/src/features/
+└── new-feature/
+    ├── index.ts           # Public exports
+    ├── NewFeature.tsx     # Main component
+    ├── components/        # Internal components
+    ├── hooks/             # Feature-specific hooks
+    ├── types.ts           # TypeScript types
+    └── utils.ts           # Helper functions
+```
+
+**Steps:**
+1. Create feature folder under `src/features/`
+2. Export public API from `index.ts`
+3. Import in parent via `@/features/new-feature`
+4. Add tests in `tests/component/new-feature/`
+
+---
+
+### Adding Backend Handlers
+
+For modular backend logic (e.g., memory operations):
+
+```
+backend-node/src/modules/memory/handlers/
+├── index.ts              # Handler registry
+├── types.ts              # Shared types
+├── int.handler.ts        # int operations
+├── pointer.handler.ts    # pointer operations
+└── new.handler.ts        # Add new handler here
+```
+
+**Pattern:**
+```typescript
+// new.handler.ts
+import { OperationHandler } from './types';
+
+export const newHandler: OperationHandler = {
+  canHandle: (op) => op.type === 'new_type',
+  handle: (op, state) => {
+    // Process operation, return updated state
+  },
+};
+
+// index.ts - register handler
+import { newHandler } from './new.handler';
+export const handlers = [...existingHandlers, newHandler];
+```
+
+---
+
+### Testing
+
+```bash
+# Unit + Component tests
+cd frontend && npm run test:run
+
+# E2E tests (requires backend running)
+cd frontend && npm run test:e2e
+
+# Type check
+cd frontend && npx tsc --noEmit
+cd backend-node && npx tsc --noEmit
+```
+
+---
+
+## 17. Code Style Guidelines
+
+- **No hardcoded values**: Use `config/env.ts`
+- **No barrel exports abuse**: Only export what's needed from `index.ts`
+- **Colocate related code**: Keep component + hooks + types together
+- **Prefer composition**: Small, focused components over large monoliths
+- **Type everything**: No `any` unless absolutely necessary
