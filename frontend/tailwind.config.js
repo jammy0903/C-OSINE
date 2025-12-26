@@ -5,16 +5,28 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   darkMode: 'class',
-  // 동적 클래스 보장 (태그 색상용)
+  // 동적 클래스 보장 (태그 색상용) - constants.ts와 동기화 필요
   safelist: [
-    // 태그 배경색
-    { pattern: /bg-(indigo|red|amber|emerald|cyan|orange|pink|violet|lime|teal|blue|green|yellow|purple|rose|sky)-\d+\/\d+/ },
-    // 태그 텍스트색
-    { pattern: /text-(indigo|red|amber|emerald|cyan|orange|pink|violet|lime|teal|blue|green|yellow|purple|rose|sky)-\d+/ },
-    // 난이도 배경색
-    { pattern: /bg-(amber|slate)-\d+\/\d+/ },
-    // 난이도 텍스트색
-    { pattern: /text-(amber|slate)-\d+/ },
+    // 태그 배경색 + 텍스트색
+    'bg-indigo-500/15', 'text-indigo-400',
+    'bg-red-400/15', 'text-red-400',
+    'bg-amber-400/15', 'text-amber-400',
+    'bg-amber-600/15', 'text-amber-600',
+    'bg-emerald-400/15', 'text-emerald-400',
+    'bg-cyan-400/15', 'text-cyan-400',
+    'bg-orange-400/15', 'text-orange-400',
+    'bg-pink-400/15', 'text-pink-400',
+    'bg-violet-400/15', 'text-violet-400',
+    'bg-lime-400/15', 'text-lime-400',
+    'bg-teal-400/15', 'text-teal-400',
+    'bg-blue-400/15', 'text-blue-400',
+    'bg-green-400/15', 'text-green-400',
+    'bg-yellow-400/15', 'text-yellow-400',
+    'bg-purple-400/15', 'text-purple-400',
+    'bg-purple-500/15',
+    'bg-rose-400/15', 'text-rose-400',
+    'bg-sky-500/15', 'text-sky-400',
+    'bg-slate-400/15', 'text-slate-400',
   ],
   theme: {
     extend: {

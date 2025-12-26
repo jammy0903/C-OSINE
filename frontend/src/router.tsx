@@ -19,7 +19,7 @@ import { useTheme } from './hooks/useTheme';
  * 모든 라우트에서 공유되는 인증 로직
  */
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setUser, setSolvedStatus, setIsAdmin } = useStore();
+  const { setUser, setSolvedStatus, setIsAdmin, setAuthLoading } = useStore();
 
   // 테마 초기화
   useTheme();
@@ -28,25 +28,32 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthChange(async (user) => {
       setUser(user);
-      if (user) {
-        await registerUser({
-          firebaseUid: user.uid,
-          email: user.email || '',
-          name: user.displayName || user.email?.split('@')[0] || 'User'
-        });
-        const [status, roleInfo] = await Promise.all([
-          getUserSolvedStatus(user.uid),
-          getUserRole(user.uid)
-        ]);
-        setSolvedStatus(status.solved, status.attempted);
-        setIsAdmin(roleInfo.isAdmin);
-      } else {
-        setSolvedStatus([], []);
-        setIsAdmin(false);
+      try {
+        if (user) {
+          await registerUser({
+            firebaseUid: user.uid,
+            email: user.email || '',
+            name: user.displayName || user.email?.split('@')[0] || 'User'
+          });
+          const [status, roleInfo] = await Promise.all([
+            getUserSolvedStatus(user.uid),
+            getUserRole(user.uid)
+          ]);
+          setSolvedStatus(status.solved, status.attempted);
+          setIsAdmin(roleInfo.isAdmin);
+        } else {
+          setSolvedStatus([], []);
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error('Auth state error:', error);
+      } finally {
+        // 인증 상태 확인 완료 (에러 발생해도 반드시 실행)
+        setAuthLoading(false);
       }
     });
     return () => unsubscribe();
-  }, [setUser, setSolvedStatus, setIsAdmin]);
+  }, [setUser, setSolvedStatus, setIsAdmin, setAuthLoading]);
 
   return <>{children}</>;
 }

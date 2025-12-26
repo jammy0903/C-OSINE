@@ -6,6 +6,8 @@ interface Store {
   // === 사용자 ===
   user: User | null;
   setUser: (user: User | null) => void;
+  authLoading: boolean;  // 인증 상태 로딩 중
+  setAuthLoading: (loading: boolean) => void;
   isAdmin: boolean;
   setIsAdmin: (isAdmin: boolean) => void;
   solvedProblems: string[];  // 정답 처리된 문제 ID 목록
@@ -44,6 +46,8 @@ export const useStore = create<Store>((set) => ({
   // === 사용자 ===
   user: null,
   setUser: (user) => set({ user }),
+  authLoading: true,  // 초기값: 로딩 중
+  setAuthLoading: (loading) => set({ authLoading: loading }),
   isAdmin: false,
   setIsAdmin: (isAdmin) => set({ isAdmin }),
   solvedProblems: [],

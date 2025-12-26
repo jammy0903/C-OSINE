@@ -12,7 +12,7 @@ import type { Problem } from '@/types';
 const ITEMS_PER_PAGE = config.ui.problemsPerPage;
 
 export function useProblems() {
-  const { solvedProblems, attemptedProblems, user } = useStore();
+  const { solvedProblems, attemptedProblems, user, authLoading } = useStore();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -71,6 +71,7 @@ export function useProblems() {
     stats,
     loading,
     user,
+    authLoading,
 
     // 필터
     search,

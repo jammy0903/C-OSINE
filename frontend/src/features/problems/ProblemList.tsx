@@ -29,6 +29,7 @@ export function ProblemList() {
     stats,
     loading,
     user,
+    authLoading,
     search,
     setSearch,
     selectedDifficulty,
@@ -43,8 +44,8 @@ export function ProblemList() {
 
   return (
     <div className="h-full flex flex-col gap-4">
-      {/* Welcome Banner (when not logged in) */}
-      {!user && (
+      {/* Welcome Banner (when not logged in and auth loading complete) */}
+      {!user && !authLoading && (
         <div className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-cyan-500/10 rounded-xl p-4 border border-primary/20 shrink-0">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
