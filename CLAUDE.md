@@ -337,3 +337,11 @@ Everything else can be built incrementally.
 
 - GitHub: jammy0903
 - Email: fuso3367@kakao.com
+
+---
+
+## 15. Reference Documents
+
+| File | Purpose |
+|------|---------|
+| `docs/syntax-reference.md` | JS/TS/React syntax concepts already explained to user. Check before re-explaining. |
