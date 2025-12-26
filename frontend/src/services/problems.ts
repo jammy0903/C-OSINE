@@ -43,33 +43,3 @@ export async function loadProblems(): Promise<Problem[]> {
   }
 }
 
-/**
- * ID로 문제 찾기
- */
-export async function getProblemById(id: string): Promise<Problem | null> {
-  const problems = await loadProblems();
-  return problems.find(p => p.id === id) || null;
-}
-
-/**
- * 난이도별 필터링
- */
-export async function getProblemsByDifficulty(tier: string): Promise<Problem[]> {
-  const problems = await loadProblems();
-  return problems.filter(p => p.difficulty.startsWith(tier));
-}
-
-/**
- * 태그별 필터링
- */
-export async function getProblemsByTag(tag: string): Promise<Problem[]> {
-  const problems = await loadProblems();
-  return problems.filter(p => p.tags.includes(tag));
-}
-
-/**
- * 캐시 초기화 (새로고침 시)
- */
-export function clearCache(): void {
-  cachedProblems = null;
-}

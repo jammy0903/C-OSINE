@@ -47,12 +47,6 @@ export const REGISTER_COLORS = {
   rip: '#3b82f6', // blue-500
 } as const;
 
-// 애니메이션 색상 (Framer Motion용)
-export const ANIMATION_COLORS = {
-  highlight: '#6366f1', // primary (indigo-500)
-  text: '#ffffff',      // foreground (dark mode)
-} as const;
-
 // 포인터 연결 색상 (디자인 doc: --pointer-arrow)
 export const POINTER_COLORS = {
   main: '#f97316',      // orange-500

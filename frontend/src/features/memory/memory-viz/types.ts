@@ -3,28 +3,8 @@
  * 메모리 시각화를 위한 타입 정의
  */
 
-// 메모리 블록 (스택/힙 변수)
-export interface MemoryBlock {
-  name: string;
-  address: string;
-  type: string;
-  size: number;
-  bytes: number[];
-  value: string;
-  points_to: string | null;
-  explanation?: string;
-}
-
-// 실행 단계
-export interface Step {
-  line: number;
-  code: string;
-  stack: MemoryBlock[];
-  heap: MemoryBlock[];
-  explanation: string;
-  rsp: string;
-  rbp: string;
-}
+// Re-export shared types
+export type { MemoryBlock, Step } from '../../../types/memory';
 
 // 뷰 모드
 export type ViewMode = 'overview' | 'stack-detail' | 'heap-detail';

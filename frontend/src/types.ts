@@ -1,11 +1,14 @@
-// 채팅 메시지
+// Re-export memory types from dedicated module
+export type { MemoryBlock, Step, TraceResult } from './types/memory';
+
+// Chat message
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
 }
 
-// 코드 실행 결과
+// Code execution result
 export interface RunResult {
   success: boolean;
   output: string;
@@ -13,15 +16,7 @@ export interface RunResult {
   memory?: string;
 }
 
-// 메모리 블록
-export interface MemBlock {
-  id: string;
-  name: string;
-  size: number;
-  address: number;
-}
-
-// 탭 타입
+// Tab type
 export type TabType = 'problems' | 'chat' | 'memory';
 
 // 문제 타입

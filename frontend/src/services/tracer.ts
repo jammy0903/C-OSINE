@@ -4,34 +4,10 @@
  */
 
 import { config } from '../config';
+import type { TraceResult } from '../types';
 
-export interface MemoryBlock {
-  name: string;
-  address: string;
-  type: string;
-  size: number;
-  bytes: number[];
-  value: string;
-  points_to: string | null;
-}
-
-export interface Step {
-  line: number;
-  code: string;
-  stack: MemoryBlock[];
-  heap: MemoryBlock[];
-  explanation: string;  // 교육용 설명
-  rsp: string;
-  rbp: string;
-}
-
-export interface TraceResult {
-  success: boolean;
-  steps: Step[];
-  source_lines: string[];
-  error?: string;
-  message?: string;
-}
+// Re-export types for consumers
+export type { MemoryBlock, Step, TraceResult } from '../types';
 
 export async function traceCode(code: string, stdin = ''): Promise<TraceResult> {
   try {

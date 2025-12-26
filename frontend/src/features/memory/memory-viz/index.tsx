@@ -34,7 +34,6 @@ export {
   isPointerType,
   sortBlocksByAddress,
   toBlockId,
-  isPointerHighlighted,
 } from './utils';
 
 // Constants

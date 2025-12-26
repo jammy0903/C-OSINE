@@ -91,19 +91,3 @@ export function sortBlocksByAddress(blocks: MemoryBlock[], descending = true): M
 export function toBlockId(address: string): string {
   return `mem-${address.replace('0x', '')}`;
 }
-
-/**
- * 블록이 포인터 하이라이트 대상인지 확인
- * @param block - 확인할 블록
- * @param selectedPointer - 선택된 포인터 주소
- * @param allBlocks - 모든 블록 목록
- */
-export function isPointerHighlighted(
-  block: MemoryBlock,
-  selectedPointer: string | null,
-  allBlocks: MemoryBlock[]
-): boolean {
-  if (!selectedPointer) return false;
-  const selectedBlock = allBlocks.find((b) => b.address === selectedPointer);
-  return block.address === selectedPointer || block.address === selectedBlock?.points_to;
-}

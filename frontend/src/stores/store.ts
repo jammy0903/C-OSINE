@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User } from 'firebase/auth';
-import type { Message, RunResult, MemBlock, TabType, Problem } from '../types';
+import type { Message, RunResult, TabType, Problem } from '../types';
 
 interface Store {
   // === 사용자 ===
@@ -35,13 +35,6 @@ interface Store {
   setResult: (result: RunResult | null) => void;
   isRunning: boolean;
   setRunning: (running: boolean) => void;
-
-  // === 메모리 시뮬레이터 ===
-  memBlocks: MemBlock[];
-  nextAddress: number;
-  malloc: (name: string, size: number) => void;
-  free: (name: string) => void;
-  resetMemory: () => void;
 }
 
 const DEFAULT_CODE = `#include <stdio.h>
@@ -84,36 +77,4 @@ export const useStore = create<Store>((set) => ({
   setResult: (result) => set({ result }),
   isRunning: false,
   setRunning: (running) => set({ isRunning: running }),
-
-  // === 메모리 시뮬레이터 ===
-  memBlocks: [],
-  nextAddress: 0x1000, // 시작 주소
-
-  malloc: (name, size) => set((s) => {
-    // 중복 이름 체크
-    if (s.memBlocks.some((b) => b.name === name)) {
-      return s; // 변경 없음
-    }
-
-    const block: MemBlock = {
-      id: crypto.randomUUID(),
-      name,
-      size,
-      address: s.nextAddress,
-    };
-
-    return {
-      memBlocks: [...s.memBlocks, block],
-      nextAddress: s.nextAddress + size,
-    };
-  }),
-
-  free: (name) => set((s) => ({
-    memBlocks: s.memBlocks.filter((b) => b.name !== name),
-  })),
-
-  resetMemory: () => set({
-    memBlocks: [],
-    nextAddress: 0x1000,
-  }),
 }));

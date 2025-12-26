@@ -10,7 +10,6 @@ import {
   isPointerType,
   sortBlocksByAddress,
   toBlockId,
-  isPointerHighlighted,
 } from '@/features/memory/memory-viz/utils';
 import type { MemoryBlock, Step } from '@/features/memory/memory-viz/types';
 
@@ -143,40 +142,3 @@ describe('getChangedBlocks', () => {
   });
 });
 
-describe('isPointerHighlighted', () => {
-  const blocks: MemoryBlock[] = [
-    { name: 'x', type: 'int', value: '5', address: '0x100', size: 4 },
-    {
-      name: 'p',
-      type: 'int*',
-      value: '0x100',
-      address: '0x200',
-      size: 8,
-      points_to: '0x100',
-    },
-  ];
-
-  it('선택된 포인터 블록은 하이라이트', () => {
-    expect(isPointerHighlighted(blocks[1], '0x200', blocks)).toBe(true);
-  });
-
-  it('포인터가 가리키는 블록도 하이라이트', () => {
-    expect(isPointerHighlighted(blocks[0], '0x200', blocks)).toBe(true);
-  });
-
-  it('관련 없는 블록은 하이라이트 안됨', () => {
-    const unrelated: MemoryBlock = {
-      name: 'z',
-      type: 'int',
-      value: '99',
-      address: '0x999',
-      size: 4,
-    };
-    expect(isPointerHighlighted(unrelated, '0x200', blocks)).toBe(false);
-  });
-
-  it('선택된 포인터가 없으면 하이라이트 안됨', () => {
-    expect(isPointerHighlighted(blocks[0], null, blocks)).toBe(false);
-    expect(isPointerHighlighted(blocks[1], null, blocks)).toBe(false);
-  });
-});
