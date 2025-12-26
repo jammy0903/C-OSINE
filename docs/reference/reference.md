@@ -103,13 +103,20 @@ http://localhost:3000/api-docs       # Swagger UI (인터랙티브)
 http://localhost:3000/api-docs.json  # OpenAPI 3.0 JSON
 ```
 
-| Tag | 엔드포인트 |
-|-----|-----------|
-| Problems | `GET /api/problems`, `GET /api/problems/:id` |
-| Submissions | `POST /api/submissions`, `GET /user/:uid`, `GET /solved/:uid` |
-| Users | `GET /api/users`, `POST /register`, `GET /:uid`, `GET /:uid/role` |
-| C Runner | `POST /api/c/run`, `POST /api/c/judge` |
-| Memory | `POST /api/memory/trace` |
+| Tag | Method | Endpoint | Description |
+|-----|--------|----------|-------------|
+| **Problems** | GET | `/api/problems` | 문제 목록 |
+| | GET | `/api/problems/:id` | 문제 상세 |
+| **Submissions** | POST | `/api/submissions` | 제출 생성 |
+| | GET | `/api/submissions/user/:uid` | 사용자 제출 기록 |
+| | GET | `/api/submissions/solved/:uid` | solved/attempted 분리 반환 |
+| **Users** | GET | `/api/users` | 전체 사용자 (Admin) |
+| | POST | `/api/users/register` | 사용자 등록/조회 |
+| | GET | `/api/users/:uid` | 사용자 정보 |
+| | GET | `/api/users/:uid/role` | role + isAdmin |
+| **C Runner** | POST | `/api/c/run` | C 코드 실행 |
+| | POST | `/api/c/judge` | 테스트케이스 채점 |
+| **Memory** | POST | `/api/memory/trace` | 메모리 시뮬레이션 |
 
 ---
 
