@@ -16,9 +16,6 @@ export interface RunResult {
   memory?: string;
 }
 
-// Tab type
-export type TabType = 'problems' | 'chat' | 'memory';
-
 // 문제 타입
 export interface Problem {
   id: string;

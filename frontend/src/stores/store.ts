@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User } from 'firebase/auth';
-import type { Message, RunResult, TabType, Problem } from '../types';
+import type { Message, RunResult, Problem } from '../types';
 
 interface Store {
   // === 사용자 ===
@@ -11,10 +11,6 @@ interface Store {
   solvedProblems: string[];  // 정답 처리된 문제 ID 목록
   attemptedProblems: string[];  // 시도한 문제 ID 목록
   setSolvedStatus: (solved: string[], attempted: string[]) => void;
-
-  // === 탭 ===
-  activeTab: TabType;
-  setActiveTab: (tab: TabType) => void;
 
   // === 선택된 문제 ===
   selectedProblem: Problem | null;
@@ -53,10 +49,6 @@ export const useStore = create<Store>((set) => ({
   solvedProblems: [],
   attemptedProblems: [],
   setSolvedStatus: (solved, attempted) => set({ solvedProblems: solved, attemptedProblems: attempted }),
-
-  // === 탭 ===
-  activeTab: 'problems',
-  setActiveTab: (tab) => set({ activeTab: tab }),
 
   // === 선택된 문제 ===
   selectedProblem: null,

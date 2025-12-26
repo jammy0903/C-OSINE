@@ -5,6 +5,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { NavLink, Link } from 'react-router-dom';
 import { useStore } from '../stores/store';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { loginWithGoogle, logout } from '../services/firebase';
@@ -18,20 +19,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ClipboardList, Cpu, MessageCircle, LogOut, Settings, ChevronDown } from 'lucide-react';
-import type { TabType } from '../types';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
-  const { activeTab, setActiveTab, user, isAdmin } = useStore();
+// 네비게이션 아이템 정의
+const navItems = [
+  { path: '/problems', label: 'Problems', icon: ClipboardList },
+  { path: '/memory', label: 'Memory', icon: Cpu },
+  { path: '/chat', label: 'AI Tutor', icon: MessageCircle },
+];
 
-  const navItems: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'problems', label: 'Problems', icon: <ClipboardList className="h-4 w-4" /> },
-    { id: 'memory', label: 'Memory', icon: <Cpu className="h-4 w-4" /> },
-    { id: 'chat', label: 'AI Tutor', icon: <MessageCircle className="h-4 w-4" /> },
-  ];
+export function MainLayout({ children }: MainLayoutProps) {
+  const { user, isAdmin } = useStore();
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
@@ -71,10 +72,10 @@ export function MainLayout({ children }: MainLayoutProps) {
                   {isAdmin && (
                     <>
                       <DropdownMenuItem asChild>
-                        <a href="/manajammy" className="flex items-center gap-2 cursor-pointer">
+                        <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
                           <Settings className="h-4 w-4" />
                           <span>Admin Console</span>
-                        </a>
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                     </>
@@ -106,16 +107,17 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         {/* Row 2: Navigation */}
         <nav className="h-10 flex items-center px-6 gap-8">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-              aria-current={activeTab === item.id ? 'page' : undefined}
+          {navItems.map(({ path, label, icon: Icon }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) =>
+                `nav-item ${isActive ? 'active' : ''}`
+              }
             >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-            </button>
+              <span className="nav-icon"><Icon className="h-4 w-4" /></span>
+              <span className="nav-label">{label}</span>
+            </NavLink>
           ))}
         </nav>
       </header>
