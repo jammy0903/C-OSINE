@@ -6,9 +6,9 @@
 
 import type { ReactNode } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { useStore } from '../stores/store';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { loginWithGoogle, logout } from '../services/firebase';
+import { useStore } from '@/stores/store';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { loginWithGoogle, logout } from '@/services/firebase';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {

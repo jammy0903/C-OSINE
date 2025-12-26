@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import type { Step, AnimationState } from '../types';
+import type { Step, AnimationState, MemoryBlock } from '../types';
 import { getChangedBlocks } from '../utils';
 
 export function useStepTransition(currentStep: Step | null) {
@@ -59,8 +59,8 @@ export function useStepTransition(currentStep: Step | null) {
     isNewBlock: (address: string) => {
       if (!animationState.previousStep) return true;
       const prevAddresses = [
-        ...animationState.previousStep.stack.map(b => b.address),
-        ...animationState.previousStep.heap.map(b => b.address),
+        ...animationState.previousStep.stack.map((b: MemoryBlock) => b.address),
+        ...animationState.previousStep.heap.map((b: MemoryBlock) => b.address),
       ];
       return !prevAddresses.includes(address);
     },

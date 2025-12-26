@@ -3,7 +3,7 @@
  * 100% 로컬, 무료
  */
 
-import { config } from '../config';
+import { config } from '@/config';
 
 const SYSTEM_PROMPT = `당신은 C 언어와 운영체제(OS) 전문 튜터입니다.
 이 플랫폼의 사용자는 C 프로그래밍과 OS를 배우러 온 학습자입니다.

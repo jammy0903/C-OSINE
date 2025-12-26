@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 import { config } from './config';
+import { swaggerSpec } from './config/swagger';
 import { problemRoutes } from './modules/problems/routes';
 import { memoryRoutes } from './modules/memory/routes';
 import { submissionRoutes } from './modules/submissions/routes';
@@ -30,6 +32,18 @@ app.use('/api/memory', memoryRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/c', cRoutes);
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'C-OSINE API Docs'
+}));
+
+// OpenAPI JSON endpoint
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // 404 handler
 app.use((req, res) => {

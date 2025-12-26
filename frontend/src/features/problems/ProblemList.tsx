@@ -3,7 +3,7 @@
  * 문제 목록 테이블 + 필터 + 페이지네이션
  */
 
-import { useStore } from '../../stores/store';
+import { useStore } from '@/stores/store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

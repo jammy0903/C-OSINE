@@ -3,8 +3,9 @@
  * 메모리 시각화를 위한 타입 정의
  */
 
-// Re-export shared types
-export type { MemoryBlock, Step } from '../../../types/memory';
+// Import and re-export shared types
+import type { MemoryBlock, Step } from '@/types/memory';
+export type { MemoryBlock, Step };
 
 // 뷰 모드
 export type ViewMode = 'overview' | 'stack-detail' | 'heap-detail';

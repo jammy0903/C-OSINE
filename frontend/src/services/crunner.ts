@@ -3,7 +3,7 @@
  * Node.js 백엔드 + Docker 샌드박스
  */
 
-import { config } from '../config';
+import { config } from '@/config';
 
 // 테스트 케이스 결과 타입
 export interface TestCaseResult {

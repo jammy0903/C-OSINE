@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useTheme } from '../hooks/useTheme';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { useTheme } from '@/hooks/useTheme';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowLeft, Search, Users, Code, CheckCircle, FileText, RefreshCw } from 'lucide-react';
-import { config } from '../config';
+import { config } from '@/config';
 
 interface User {
   id: string;

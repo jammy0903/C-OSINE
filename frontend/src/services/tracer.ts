@@ -3,11 +3,11 @@
  * C 코드 시뮬레이션 및 메모리 상태 추적
  */
 
-import { config } from '../config';
-import type { TraceResult } from '../types';
+import { config } from '@/config';
+import type { TraceResult } from '@/types';
 
 // Re-export types for consumers
-export type { MemoryBlock, Step, TraceResult } from '../types';
+export type { MemoryBlock, Step, TraceResult } from '@/types';
 
 export async function traceCode(code: string, stdin = ''): Promise<TraceResult> {
   try {

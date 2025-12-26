@@ -3,8 +3,8 @@
  * 백엔드 API에서 로드
  */
 
-import type { Problem } from '../types';
-import { config } from '../config';
+import type { Problem } from '@/types';
+import { config } from '@/config';
 
 
 // 백엔드에서 받은 Raw Problem (JSON 문자열 포함)

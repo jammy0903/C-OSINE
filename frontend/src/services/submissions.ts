@@ -3,7 +3,7 @@
  * 사용자 제출 기록 및 풀이 상태 조회
  */
 
-import { config } from '../config';
+import { config } from '@/config';
 
 
 export interface SolvedStatus {

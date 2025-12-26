@@ -2,7 +2,7 @@
  * Users API 서비스
  */
 
-import { config } from '../config';
+import { config } from '@/config';
 
 /**
  * 사용자 등록 (Firebase 로그인 후 호출)

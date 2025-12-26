@@ -31,8 +31,29 @@ function validateCode(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * POST /api/c/run
- * C 코드 컴파일 및 실행
+ * @swagger
+ * /api/c/run:
+ *   post:
+ *     tags: [C Runner]
+ *     summary: C 코드 컴파일 및 실행
+ *     description: Docker 컨테이너에서 C 코드를 컴파일하고 실행
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RunRequest'
+ *     responses:
+ *       200:
+ *         description: 실행 결과
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RunResponse'
+ *       400:
+ *         description: 유효성 검사 실패
+ *       500:
+ *         description: 내부 서버 에러
  */
 cRoutes.post('/run', validateCode, async (req, res) => {
   try {
@@ -63,14 +84,36 @@ cRoutes.post('/run', validateCode, async (req, res) => {
 });
 
 /**
- * POST /api/c/judge
- * 문제 채점 (테스트케이스 기반)
+ * @swagger
+ * /api/c/judge:
+ *   post:
+ *     tags: [C Runner]
+ *     summary: 문제 채점 (테스트케이스 기반)
+ *     description: 코드를 테스트케이스에 대해 채점하고 결과 반환. 로그인 시 제출 기록 저장
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/JudgeRequest'
+ *     responses:
+ *       200:
+ *         description: 채점 결과
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/JudgeResponse'
+ *       400:
+ *         description: 테스트케이스 없음
+ *       404:
+ *         description: 문제를 찾을 수 없음
+ *       500:
+ *         description: 내부 서버 에러
  */
 cRoutes.post('/judge', validateCode, async (req, res) => {
   try {
     const { code, problemId, firebaseUid, testCases } = req.body;
 
-    // testCases가 직접 제공되면 사용, 아니면 DB에서 조회
     let cases = testCases;
 
     if (!cases && problemId) {
@@ -102,10 +145,8 @@ cRoutes.post('/judge', validateCode, async (req, res) => {
       });
     }
 
-    // 채점 실행
     const result = await judgeCode(code, cases, config.execution.judgeTimeout);
 
-    // 제출 기록 저장 (로그인된 사용자만)
     if (firebaseUid && problemId) {
       try {
         const user = await prisma.user.findUnique({
@@ -125,7 +166,6 @@ cRoutes.post('/judge', validateCode, async (req, res) => {
         }
       } catch (dbError) {
         console.error('Failed to save submission:', dbError);
-        // 제출 저장 실패해도 채점 결과는 반환
       }
     }
 

@@ -3,7 +3,43 @@ import { prisma } from '../../config/database';
 
 export const submissionRoutes = Router();
 
-// 제출 기록 생성
+/**
+ * @swagger
+ * /api/submissions:
+ *   post:
+ *     tags: [Submissions]
+ *     summary: 제출 기록 생성
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [firebaseUid, problemId, code]
+ *             properties:
+ *               firebaseUid:
+ *                 type: string
+ *               problemId:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *               verdict:
+ *                 type: string
+ *                 enum: [accepted, wrong_answer, compile_error, runtime_error]
+ *               executionTime:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: 제출 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Submission'
+ *       400:
+ *         description: 필수 필드 누락
+ *       401:
+ *         description: 사용자 없음
+ */
 submissionRoutes.post('/', async (req, res) => {
   try {
     const { firebaseUid, problemId, code, verdict, executionTime } = req.body;
@@ -12,7 +48,6 @@ submissionRoutes.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Firebase UID로 사용자 찾기 (없으면 자동 생성)
     let user = await prisma.user.findUnique({
       where: { firebaseUid }
     });
@@ -38,7 +73,28 @@ submissionRoutes.post('/', async (req, res) => {
   }
 });
 
-// 사용자의 제출 기록 조회
+/**
+ * @swagger
+ * /api/submissions/user/{firebaseUid}:
+ *   get:
+ *     tags: [Submissions]
+ *     summary: 사용자의 제출 기록 조회
+ *     parameters:
+ *       - in: path
+ *         name: firebaseUid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 제출 기록 목록
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Submission'
+ */
 submissionRoutes.get('/user/:firebaseUid', async (req, res) => {
   try {
     const { firebaseUid } = req.params;
@@ -67,7 +123,36 @@ submissionRoutes.get('/user/:firebaseUid', async (req, res) => {
   }
 });
 
-// 사용자가 푼 문제 ID 목록 (accepted만)
+/**
+ * @swagger
+ * /api/submissions/solved/{firebaseUid}:
+ *   get:
+ *     tags: [Submissions]
+ *     summary: 사용자가 푼 문제 ID 목록
+ *     description: solved(정답), attempted(시도중) 분리 반환
+ *     parameters:
+ *       - in: path
+ *         name: firebaseUid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 문제 ID 목록
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 solved:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 attempted:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ */
 submissionRoutes.get('/solved/:firebaseUid', async (req, res) => {
   try {
     const { firebaseUid } = req.params;
@@ -80,7 +165,6 @@ submissionRoutes.get('/solved/:firebaseUid', async (req, res) => {
       return res.json({ solved: [], attempted: [] });
     }
 
-    // 정답 처리된 문제들
     const solvedSubmissions = await prisma.submission.findMany({
       where: {
         userId: user.id,
@@ -90,7 +174,6 @@ submissionRoutes.get('/solved/:firebaseUid', async (req, res) => {
       distinct: ['problemId']
     });
 
-    // 시도했지만 아직 못 푼 문제들
     const allSubmissions = await prisma.submission.findMany({
       where: { userId: user.id },
       select: { problemId: true },

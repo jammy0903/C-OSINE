@@ -11,7 +11,7 @@ import { ProcessMemoryView } from './components/ProcessMemoryView';
 import { StackDetailView } from './components/StackDetailView';
 import { HeapDetailView } from './components/HeapDetailView';
 import { useStepTransition } from './hooks/useStepTransition';
-import { traceCode } from '../../../services/tracer';
+import { traceCode } from '@/services/tracer';
 import { Button } from '@/components/ui/button';
 
 export function ProcessMemoryVisualization() {

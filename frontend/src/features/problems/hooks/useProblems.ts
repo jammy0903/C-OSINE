@@ -4,10 +4,10 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { useStore } from '../../../stores/store';
-import { loadProblems } from '../../../services/problems';
-import { config } from '../../../config';
-import type { Problem } from '../../../types';
+import { useStore } from '@/stores/store';
+import { loadProblems } from '@/services/problems';
+import { config } from '@/config';
+import type { Problem } from '@/types';
 
 const ITEMS_PER_PAGE = config.ui.problemsPerPage;
 

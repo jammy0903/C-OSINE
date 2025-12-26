@@ -4,8 +4,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useStore } from '../../../stores/store';
-import { askAI } from '../../../services/ollama';
+import { useStore } from '@/stores/store';
+import { askAI } from '@/services/ollama';
 
 export function useChat() {
   const [input, setInput] = useState('');

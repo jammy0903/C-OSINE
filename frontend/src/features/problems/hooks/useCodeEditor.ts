@@ -5,9 +5,9 @@
 
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '../../../stores/store';
-import { runCode, runTestCases, type TestCaseResult } from '../../../services/crunner';
-import { createSubmission } from '../../../services/submissions';
+import { useStore } from '@/stores/store';
+import { runCode, runTestCases, type TestCaseResult } from '@/services/crunner';
+import { createSubmission } from '@/services/submissions';
 
 const DEFAULT_CODE = `#include <stdio.h>
 

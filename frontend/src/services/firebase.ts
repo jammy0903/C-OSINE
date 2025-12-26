@@ -11,7 +11,7 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { config } from '../config';
+import { config } from '@/config';
 
 // Firebase 초기화
 const app = initializeApp(config.firebase);

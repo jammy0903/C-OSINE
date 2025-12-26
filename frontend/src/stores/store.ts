@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User } from 'firebase/auth';
-import type { Message, RunResult, Problem } from '../types';
+import type { Message, RunResult, Problem } from '@/types';
 
 interface Store {
   // === 사용자 ===
