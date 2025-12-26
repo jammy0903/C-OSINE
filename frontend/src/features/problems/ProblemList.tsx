@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+/**
+ * ProblemList Component
+ * 문제 목록 테이블 + 필터 + 페이지네이션
+ */
+
 import { useStore } from '../../stores/store';
-import { loadProblems } from '../../services/problems';
-import { config } from '../../config';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,104 +18,28 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Check, Circle, AlertCircle } from 'lucide-react';
-import type { Problem } from '../../types';
-
-// Tag color mapping (Tailwind classes)
-const TAG_COLORS: Record<string, string> = {
-  '구현': 'bg-indigo-500/15 text-indigo-400',
-  '시뮬레이션': 'bg-indigo-500/15 text-indigo-400',
-  '브루트포스': 'bg-red-400/15 text-red-400',
-  '완전탐색': 'bg-red-400/15 text-red-400',
-  '수학': 'bg-amber-400/15 text-amber-400',
-  '문자열': 'bg-emerald-400/15 text-emerald-400',
-  '자료구조': 'bg-cyan-400/15 text-cyan-400',
-  '정렬': 'bg-orange-400/15 text-orange-400',
-  '탐색': 'bg-pink-400/15 text-pink-400',
-  'dp': 'bg-violet-400/15 text-violet-400',
-  '그리디': 'bg-lime-400/15 text-lime-400',
-  '그래프': 'bg-teal-400/15 text-teal-400',
-};
-
-const FALLBACK_COLORS = [
-  'bg-purple-500/15 text-purple-400',
-  'bg-sky-500/15 text-sky-400',
-];
-
-function getTagColor(tag: string, index: number): string {
-  const lowerTag = tag.toLowerCase();
-  for (const [key, value] of Object.entries(TAG_COLORS)) {
-    if (lowerTag.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerTag)) {
-      return value;
-    }
-  }
-  return FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-}
-
-// Difficulty config (Tailwind classes)
-const DIFFICULTY_CONFIG: Record<string, { className: string; label: string }> = {
-  bronze: { className: 'bg-amber-600/15 text-amber-600', label: 'Bronze' },
-  silver: { className: 'bg-slate-400/15 text-slate-400', label: 'Silver' },
-  gold: { className: 'bg-amber-400/15 text-amber-400', label: 'Gold' },
-  platinum: { className: 'bg-emerald-400/15 text-emerald-400', label: 'Platinum' },
-  diamond: { className: 'bg-cyan-400/15 text-cyan-400', label: 'Diamond' },
-  ruby: { className: 'bg-red-400/15 text-red-400', label: 'Ruby' },
-};
-
-function getDifficultyInfo(diff: string): { className: string; label: string } {
-  const lower = diff.toLowerCase();
-  for (const [key, value] of Object.entries(DIFFICULTY_CONFIG)) {
-    if (lower.includes(key)) return value;
-  }
-  return { className: 'bg-muted text-muted-foreground', label: diff };
-}
-
-const ITEMS_PER_PAGE = config.ui.problemsPerPage;
-const DIFFICULTIES = ['All', 'Bronze', 'Silver', 'Gold', 'Platinum'] as const;
+import { useProblems } from './hooks/useProblems';
+import { getTagColor, getDifficultyInfo, DIFFICULTIES } from './constants';
 
 export function ProblemList() {
-  const { selectProblem, solvedProblems, attemptedProblems, user } = useStore();
-  const [problems, setProblems] = useState<Problem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    loadProblems()
-      .then(setProblems)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const stats = {
-    total: problems.length,
-    solved: solvedProblems.length,
-    attempted: attemptedProblems.length,
-    remaining: problems.length - solvedProblems.length,
-  };
-
-  const filteredProblems = problems.filter((p) => {
-    const matchesSearch = search === '' ||
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.number.toString().includes(search) ||
-      p.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
-    const matchesDifficulty = !selectedDifficulty ||
-      p.difficulty.toLowerCase().includes(selectedDifficulty);
-    return matchesSearch && matchesDifficulty;
-  });
-
-  const totalPages = Math.ceil(filteredProblems.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedProblems = filteredProblems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, selectedDifficulty]);
-
-  const getUserStatus = (problemId: string): 'solved' | 'attempted' | null => {
-    if (solvedProblems.includes(problemId)) return 'solved';
-    if (attemptedProblems.includes(problemId)) return 'attempted';
-    return null;
-  };
+  const { selectProblem } = useStore();
+  const {
+    problems,
+    filteredCount,
+    stats,
+    loading,
+    user,
+    search,
+    setSearch,
+    selectedDifficulty,
+    setSelectedDifficulty,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    startIndex,
+    itemsPerPage,
+    getUserStatus,
+  } = useProblems();
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -149,7 +75,7 @@ export function ProblemList() {
           <div className="flex items-center gap-4">
             <h3 className="text-sm font-medium">Problems</h3>
             <Badge variant="secondary" className="text-xs">
-              {filteredProblems.length} items
+              {filteredCount} items
             </Badge>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
@@ -201,7 +127,7 @@ export function ProblemList() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedProblems.map((problem) => {
+                  {problems.map((problem) => {
                     const status = getUserStatus(problem.id);
                     const diffInfo = getDifficultyInfo(problem.difficulty);
                     return (
@@ -254,7 +180,7 @@ export function ProblemList() {
                 </TableBody>
               </Table>
 
-              {filteredProblems.length === 0 && (
+              {filteredCount === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">
                   No problems found
                 </div>
@@ -262,87 +188,115 @@ export function ProblemList() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="px-5 py-3 border-t border-border flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
-                    Showing {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredProblems.length)} of {filteredProblems.length}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                      aria-label="Go to first page"
-                    >
-                      <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      aria-label="Go to previous page"
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
-                      Prev
-                    </Button>
-
-                    <div className="flex items-center gap-1 mx-2">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum: number;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={currentPage === pageNum ? 'default' : 'ghost'}
-                            size="icon"
-                            className="h-8 w-8 text-xs"
-                            onClick={() => setCurrentPage(pageNum)}
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
-                    </div>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      aria-label="Go to next page"
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                      aria-label="Go to last page"
-                    >
-                      <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  startIndex={startIndex}
+                  itemsPerPage={itemsPerPage}
+                  filteredCount={filteredCount}
+                  onPageChange={setCurrentPage}
+                />
               )}
             </>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// 페이지네이션 컴포넌트
+function Pagination({
+  currentPage,
+  totalPages,
+  startIndex,
+  itemsPerPage,
+  filteredCount,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  startIndex: number;
+  itemsPerPage: number;
+  filteredCount: number;
+  onPageChange: (page: number) => void;
+}) {
+  return (
+    <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+      <span className="text-xs text-muted-foreground">
+        Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCount)} of {filteredCount}
+      </span>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1}
+          aria-label="Go to first page"
+        >
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          aria-label="Go to previous page"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Prev
+        </Button>
+
+        <div className="flex items-center gap-1 mx-2">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum: number;
+            if (totalPages <= 5) {
+              pageNum = i + 1;
+            } else if (currentPage <= 3) {
+              pageNum = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i;
+            } else {
+              pageNum = currentPage - 2 + i;
+            }
+            return (
+              <Button
+                key={pageNum}
+                variant={currentPage === pageNum ? 'default' : 'ghost'}
+                size="icon"
+                className="h-8 w-8 text-xs"
+                onClick={() => onPageChange(pageNum)}
+              >
+                {pageNum}
+              </Button>
+            );
+          })}
+        </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8"
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          aria-label="Go to next page"
+        >
+          Next
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onPageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          aria-label="Go to last page"
+        >
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
