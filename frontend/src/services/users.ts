@@ -2,9 +2,7 @@
  * Users API 서비스
  */
 
-import { env } from '../config/env';
-
-const API_URL = env.VITE_API_URL;
+import { config } from '../config';
 
 /**
  * 사용자 등록 (Firebase 로그인 후 호출)
@@ -15,7 +13,7 @@ export async function registerUser(data: {
   name: string;
 }): Promise<boolean> {
   try {
-    const response = await fetch(`${API_URL}/api/users/register`, {
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.users}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -32,7 +30,7 @@ export async function registerUser(data: {
  */
 export async function getUserRole(firebaseUid: string): Promise<{ role: string; isAdmin: boolean }> {
   try {
-    const response = await fetch(`${API_URL}/api/users/${firebaseUid}/role`);
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.users}/${firebaseUid}/role`);
     if (!response.ok) {
       return { role: 'user', isAdmin: false };
     }

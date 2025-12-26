@@ -3,10 +3,7 @@
  * 100% 로컬, 무료
  */
 
-import { env } from '../config/env';
-
-const OLLAMA_URL = env.VITE_OLLAMA_URL;
-const MODEL = env.VITE_OLLAMA_MODEL;
+import { config } from '../config';
 
 const SYSTEM_PROMPT = `당신은 C 언어와 운영체제(OS) 전문 튜터입니다.
 이 플랫폼의 사용자는 C 프로그래밍과 OS를 배우러 온 학습자입니다.
@@ -65,18 +62,18 @@ export async function askAI(
   ];
 
   try {
-    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+    const response = await fetch(`${config.ollama.url}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: config.ollama.model,
         messages,
         stream: false,
         options: {
-          temperature: env.VITE_OLLAMA_TEMPERATURE,
-          num_predict: env.VITE_OLLAMA_NUM_PREDICT,
+          temperature: config.ollama.temperature,
+          num_predict: config.ollama.numPredict,
         },
       }),
     });

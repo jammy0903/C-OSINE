@@ -4,9 +4,8 @@
  */
 
 import type { Problem } from '../types';
-import { env } from '../config/env';
+import { config } from '../config';
 
-const API_URL = env.VITE_API_URL;
 
 // 백엔드에서 받은 Raw Problem (JSON 문자열 포함)
 interface RawProblem extends Omit<Problem, 'tags' | 'testCases'> {
@@ -25,7 +24,7 @@ export async function loadProblems(): Promise<Problem[]> {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/problems`);
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.problems}`);
     if (!response.ok) {
       throw new Error(`Failed to load problems: ${response.status}`);
     }

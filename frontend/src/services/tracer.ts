@@ -3,9 +3,7 @@
  * C 코드 시뮬레이션 및 메모리 상태 추적
  */
 
-import { env } from '../config/env';
-
-const API_URL = env.VITE_API_URL;
+import { config } from '../config';
 
 export interface MemoryBlock {
   name: string;
@@ -37,7 +35,7 @@ export interface TraceResult {
 
 export async function traceCode(code: string, stdin = ''): Promise<TraceResult> {
   try {
-    const response = await fetch(`${API_URL}/api/memory/trace`, {
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.memoryTrace}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +43,7 @@ export async function traceCode(code: string, stdin = ''): Promise<TraceResult> 
       body: JSON.stringify({
         code,
         stdin,
-        timeout: env.VITE_TRACER_TIMEOUT,
+        timeout: config.api.timeout.trace,
       }),
     });
 

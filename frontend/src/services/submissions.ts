@@ -3,9 +3,8 @@
  * 사용자 제출 기록 및 풀이 상태 조회
  */
 
-import { env } from '../config/env';
+import { config } from '../config';
 
-const API_URL = env.VITE_API_URL;
 
 export interface SolvedStatus {
   solved: string[];   // 정답 처리된 문제 ID 목록
@@ -17,7 +16,7 @@ export interface SolvedStatus {
  */
 export async function getUserSolvedStatus(firebaseUid: string): Promise<SolvedStatus> {
   try {
-    const response = await fetch(`${API_URL}/api/submissions/solved/${firebaseUid}`);
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.submissions}/solved/${firebaseUid}`);
     if (!response.ok) {
       throw new Error('Failed to fetch solved status');
     }
@@ -39,7 +38,7 @@ export async function createSubmission(data: {
   executionTime?: number;
 }): Promise<boolean> {
   try {
-    const response = await fetch(`${API_URL}/api/submissions`, {
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.submissions}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)

@@ -3,9 +3,7 @@
  * Node.js 백엔드 + Docker 샌드박스
  */
 
-import { env } from '../config/env';
-
-const API_URL = env.VITE_API_URL;
+import { config } from '../config';
 
 // 테스트 케이스 결과 타입
 export interface TestCaseResult {
@@ -74,7 +72,7 @@ export async function runCode(
   memory?: string;
 }> {
   try {
-    const response = await fetch(`${API_URL}/api/c/run`, {
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.cRun}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -82,7 +80,7 @@ export async function runCode(
       body: JSON.stringify({
         code,
         stdin,
-        timeout: env.VITE_C_RUN_TIMEOUT,
+        timeout: config.api.timeout.run,
       }),
     });
 
@@ -126,7 +124,7 @@ export async function runTestCases(
   testCases: TestCaseInput[]
 ): Promise<TestCasesResult> {
   try {
-    const response = await fetch(`${API_URL}/api/c/judge`, {
+    const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.cJudge}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -134,7 +132,7 @@ export async function runTestCases(
       body: JSON.stringify({
         code,
         testCases,
-        timeout: env.VITE_C_JUDGE_TIMEOUT,
+        timeout: config.api.timeout.judge,
       }),
     });
 

@@ -16,9 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowLeft, Search, Users, Code, CheckCircle, FileText, RefreshCw } from 'lucide-react';
-import { env } from '../config/env';
-
-const API_URL = env.VITE_API_URL;
+import { config } from '../config';
 
 interface User {
   id: string;
@@ -46,7 +44,7 @@ export function Admin() {
   async function fetchUsers() {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/users`);
+      const res = await fetch(`${config.api.baseUrl}${config.api.endpoints.users}`);
       const data = await res.json();
       setUsers(data);
     } catch (error) {

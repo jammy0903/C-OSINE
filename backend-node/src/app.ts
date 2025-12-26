@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { env, corsOrigins } from './config/env';
+import { config } from './config';
 import { problemRoutes } from './modules/problems/routes';
 import { memoryRoutes } from './modules/memory/routes';
 import { submissionRoutes } from './modules/submissions/routes';
@@ -11,10 +11,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: corsOrigins,
+  origin: config.server.corsOrigins,
   credentials: true
 }));
-app.use(express.json({ limit: env.JSON_BODY_LIMIT }));
+app.use(express.json({ limit: config.server.jsonBodyLimit }));
 
 // Routes
 app.get('/', (req, res) => {
@@ -42,13 +42,13 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   console.error(err.stack);
   res.status(500).json({
     error: 'Internal server error',
-    message: env.NODE_ENV === 'development' ? err.message : undefined
+    message: config.server.isDev ? err.message : undefined
   });
 });
 
 // Start server
-app.listen(env.PORT, () => {
-  console.log(`Server running on http://localhost:${env.PORT}`);
+app.listen(config.server.port, () => {
+  console.log(`Server running on http://localhost:${config.server.port}`);
 });
 
 export default app;

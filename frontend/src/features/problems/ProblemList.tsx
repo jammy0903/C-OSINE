@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../../stores/store';
 import { loadProblems } from '../../services/problems';
+import { config } from '../../config';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -66,7 +67,7 @@ function getDifficultyInfo(diff: string): { className: string; label: string } {
   return { className: 'bg-muted text-muted-foreground', label: diff };
 }
 
-const ITEMS_PER_PAGE = 30;
+const ITEMS_PER_PAGE = config.ui.problemsPerPage;
 const DIFFICULTIES = ['All', 'Bronze', 'Silver', 'Gold', 'Platinum'] as const;
 
 export function ProblemList() {

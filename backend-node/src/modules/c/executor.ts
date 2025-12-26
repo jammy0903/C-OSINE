@@ -10,7 +10,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
-import { env } from '../../config/env';
+import { config } from '../../config';
 
 const execAsync = promisify(exec);
 
@@ -71,7 +71,7 @@ function checkCodeSecurity(code: string): { safe: boolean; reason?: string } {
 /**
  * Docker로 C 코드 컴파일 및 실행
  */
-export async function runCCode(code: string, stdin: string = '', timeout: number = env.C_RUN_DEFAULT_TIMEOUT): Promise<RunResult> {
+export async function runCCode(code: string, stdin: string = '', timeout: number = config.execution.defaultTimeout): Promise<RunResult> {
   const startTime = Date.now();
 
   // 보안 검사
@@ -109,15 +109,15 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
       'docker', 'run',
       '--rm',
       '--network', 'none',           // 네트워크 차단
-      '--memory', env.DOCKER_MEMORY_LIMIT,
-      '--cpus', env.DOCKER_CPU_LIMIT,
-      '--pids-limit', String(env.DOCKER_PID_LIMIT),
+      '--memory', config.docker.memoryLimit,
+      '--cpus', config.docker.cpuLimit,
+      '--pids-limit', String(config.docker.pidLimit),
       '--read-only',                 // 읽기 전용
-      '--tmpfs', `/tmp:size=${env.DOCKER_TMPFS_SIZE},exec`,
+      '--tmpfs', `/tmp:size=${config.docker.tmpfsSize},exec`,
       '--security-opt', 'no-new-privileges:true',
       '-v', `${tmpDir}:/code:ro`,    // 코드 마운트 (읽기 전용)
       '-w', '/tmp',
-      env.DOCKER_IMAGE,
+      config.docker.image,
       '/bin/sh', '-c',
       `"${shellCmd}"`
     ].join(' ');
@@ -125,7 +125,7 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
     try {
       const { stdout, stderr } = await execAsync(dockerCmd, {
         timeout: (timeout + 5) * 1000,
-        maxBuffer: env.C_EXECUTOR_BUFFER_SIZE
+        maxBuffer: config.execution.bufferSize
       });
 
       const executionTime = Date.now() - startTime;
@@ -200,7 +200,7 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
 export async function judgeCode(
   code: string,
   testCases: Array<{ input: string; output: string }>,
-  timeout: number = env.C_JUDGE_TIMEOUT
+  timeout: number = config.execution.judgeTimeout
 ): Promise<JudgeResult> {
   const startTime = Date.now();
   const details: JudgeResult['details'] = [];
