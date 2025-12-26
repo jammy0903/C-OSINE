@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { runCCode, judgeCode } from './executor';
 import { prisma } from '../../config/database';
+import { env } from '../../config/env';
 
 export const cRoutes = Router();
 
@@ -18,11 +19,11 @@ function validateCode(req: Request, res: Response, next: NextFunction) {
     });
   }
 
-  if (code.length > 50000) {
+  if (code.length > env.CODE_MAX_LENGTH) {
     return res.status(400).json({
       success: false,
       error: 'validation_error',
-      message: '코드가 너무 깁니다 (최대 50000자)'
+      message: `코드가 너무 깁니다 (최대 ${env.CODE_MAX_LENGTH}자)`
     });
   }
 
@@ -35,8 +36,8 @@ function validateCode(req: Request, res: Response, next: NextFunction) {
  */
 cRoutes.post('/run', validateCode, async (req, res) => {
   try {
-    const { code, stdin = '', timeout = 10 } = req.body;
-    const timeoutSec = Math.min(Math.max(1, timeout), 30);
+    const { code, stdin = '', timeout = env.C_RUN_DEFAULT_TIMEOUT } = req.body;
+    const timeoutSec = Math.min(Math.max(1, timeout), env.C_RUN_MAX_TIMEOUT);
     const result = await runCCode(code, stdin, timeoutSec);
 
     res.json({
@@ -102,7 +103,7 @@ cRoutes.post('/judge', validateCode, async (req, res) => {
     }
 
     // 채점 실행
-    const result = await judgeCode(code, cases, 5);
+    const result = await judgeCode(code, cases, env.C_JUDGE_TIMEOUT);
 
     // 제출 기록 저장 (로그인된 사용자만)
     if (firebaseUid && problemId) {

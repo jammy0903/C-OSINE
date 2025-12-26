@@ -16,8 +16,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowLeft, Search, Users, Code, CheckCircle, FileText, RefreshCw } from 'lucide-react';
+import { env } from '../config/env';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = env.VITE_API_URL;
 
 interface User {
   id: string;

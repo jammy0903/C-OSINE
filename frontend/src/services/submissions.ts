@@ -3,7 +3,9 @@
  * 사용자 제출 기록 및 풀이 상태 조회
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { env } from '../config/env';
+
+const API_URL = env.VITE_API_URL;
 
 export interface SolvedStatus {
   solved: string[];   // 정답 처리된 문제 ID 목록

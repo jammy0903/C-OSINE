@@ -10,6 +10,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
+import { env } from '../../config/env';
 
 const execAsync = promisify(exec);
 
@@ -70,7 +71,7 @@ function checkCodeSecurity(code: string): { safe: boolean; reason?: string } {
 /**
  * Docker로 C 코드 컴파일 및 실행
  */
-export async function runCCode(code: string, stdin: string = '', timeout: number = 10): Promise<RunResult> {
+export async function runCCode(code: string, stdin: string = '', timeout: number = env.C_RUN_DEFAULT_TIMEOUT): Promise<RunResult> {
   const startTime = Date.now();
 
   // 보안 검사
@@ -108,15 +109,15 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
       'docker', 'run',
       '--rm',
       '--network', 'none',           // 네트워크 차단
-      '--memory', '128m',            // 메모리 제한
-      '--cpus', '0.5',               // CPU 제한
-      '--pids-limit', '50',          // 프로세스 수 제한
+      '--memory', env.DOCKER_MEMORY_LIMIT,
+      '--cpus', env.DOCKER_CPU_LIMIT,
+      '--pids-limit', String(env.DOCKER_PID_LIMIT),
       '--read-only',                 // 읽기 전용
-      '--tmpfs', '/tmp:size=10m,exec', // 쓰기용 tmpfs (exec 권한 필요)
+      '--tmpfs', `/tmp:size=${env.DOCKER_TMPFS_SIZE},exec`,
       '--security-opt', 'no-new-privileges:true',
       '-v', `${tmpDir}:/code:ro`,    // 코드 마운트 (읽기 전용)
       '-w', '/tmp',
-      'gcc:latest',
+      env.DOCKER_IMAGE,
       '/bin/sh', '-c',
       `"${shellCmd}"`
     ].join(' ');
@@ -124,7 +125,7 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
     try {
       const { stdout, stderr } = await execAsync(dockerCmd, {
         timeout: (timeout + 5) * 1000,
-        maxBuffer: 10 * 1024 * 1024
+        maxBuffer: env.C_EXECUTOR_BUFFER_SIZE
       });
 
       const executionTime = Date.now() - startTime;
@@ -199,7 +200,7 @@ export async function runCCode(code: string, stdin: string = '', timeout: number
 export async function judgeCode(
   code: string,
   testCases: Array<{ input: string; output: string }>,
-  timeout: number = 5
+  timeout: number = env.C_JUDGE_TIMEOUT
 ): Promise<JudgeResult> {
   const startTime = Date.now();
   const details: JudgeResult['details'] = [];

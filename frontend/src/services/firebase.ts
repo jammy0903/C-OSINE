@@ -1,6 +1,5 @@
 /**
  * Firebase Authentication - Google 로그인
- * 프로젝트: cosine-bdc40
  */
 
 import { initializeApp } from 'firebase/app';
@@ -12,15 +11,16 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
+import { env } from '../config/env';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBsTL_fN0_Nk4PdS3000-L2DUfprxtKBwc",
-  authDomain: "cosine-bdc40.firebaseapp.com",
-  projectId: "cosine-bdc40",
-  storageBucket: "cosine-bdc40.firebasestorage.app",
-  messagingSenderId: "765746375432",
-  appId: "1:765746375432:web:148fa6b0266d9f396edabd",
-  measurementId: "G-5D1NDHKTJH"
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID,
+  measurementId: env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Firebase 초기화

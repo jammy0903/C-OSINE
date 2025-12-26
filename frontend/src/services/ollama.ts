@@ -3,8 +3,10 @@
  * 100% 로컬, 무료
  */
 
-const OLLAMA_URL = import.meta.env.VITE_OLLAMA_URL || 'http://localhost:11434';
-const MODEL = import.meta.env.VITE_OLLAMA_MODEL || 'qwen2.5-coder:7b';
+import { env } from '../config/env';
+
+const OLLAMA_URL = env.VITE_OLLAMA_URL;
+const MODEL = env.VITE_OLLAMA_MODEL;
 
 const SYSTEM_PROMPT = `당신은 C 언어와 운영체제(OS) 전문 튜터입니다.
 이 플랫폼의 사용자는 C 프로그래밍과 OS를 배우러 온 학습자입니다.
@@ -73,8 +75,8 @@ export async function askAI(
         messages,
         stream: false,
         options: {
-          temperature: 0.7,
-          num_predict: 1024,
+          temperature: env.VITE_OLLAMA_TEMPERATURE,
+          num_predict: env.VITE_OLLAMA_NUM_PREDICT,
         },
       }),
     });

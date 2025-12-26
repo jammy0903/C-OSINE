@@ -3,7 +3,9 @@
  * Node.js 백엔드 + Docker 샌드박스
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { env } from '../config/env';
+
+const API_URL = env.VITE_API_URL;
 
 // 테스트 케이스 결과 타입
 export interface TestCaseResult {
@@ -80,7 +82,7 @@ export async function runCode(
       body: JSON.stringify({
         code,
         stdin,
-        timeout: 10,
+        timeout: env.VITE_C_RUN_TIMEOUT,
       }),
     });
 
@@ -132,7 +134,7 @@ export async function runTestCases(
       body: JSON.stringify({
         code,
         testCases,
-        timeout: 5,
+        timeout: env.VITE_C_JUDGE_TIMEOUT,
       }),
     });
 

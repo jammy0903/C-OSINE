@@ -4,8 +4,9 @@
  */
 
 import type { Problem } from '../types';
+import { env } from '../config/env';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = env.VITE_API_URL;
 
 // 백엔드에서 받은 Raw Problem (JSON 문자열 포함)
 interface RawProblem extends Omit<Problem, 'tags' | 'testCases'> {

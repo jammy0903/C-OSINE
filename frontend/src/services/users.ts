@@ -2,7 +2,9 @@
  * Users API 서비스
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { env } from '../config/env';
+
+const API_URL = env.VITE_API_URL;
 
 /**
  * 사용자 등록 (Firebase 로그인 후 호출)

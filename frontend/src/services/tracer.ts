@@ -3,7 +3,9 @@
  * C 코드 시뮬레이션 및 메모리 상태 추적
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { env } from '../config/env';
+
+const API_URL = env.VITE_API_URL;
 
 export interface MemoryBlock {
   name: string;
@@ -43,7 +45,7 @@ export async function traceCode(code: string, stdin = ''): Promise<TraceResult> 
       body: JSON.stringify({
         code,
         stdin,
-        timeout: 10,
+        timeout: env.VITE_TRACER_TIMEOUT,
       }),
     });
 
