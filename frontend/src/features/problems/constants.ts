@@ -5,6 +5,7 @@
 
 // Tag color mapping (Tailwind classes)
 export const TAG_COLORS: Record<string, string> = {
+  // 기본 태그
   '구현': 'bg-indigo-500/15 text-indigo-400',
   '시뮬레이션': 'bg-indigo-500/15 text-indigo-400',
   '브루트포스': 'bg-red-400/15 text-red-400',
@@ -17,6 +18,15 @@ export const TAG_COLORS: Record<string, string> = {
   'dp': 'bg-violet-400/15 text-violet-400',
   '그리디': 'bg-lime-400/15 text-lime-400',
   '그래프': 'bg-teal-400/15 text-teal-400',
+  // 추가 태그 (DB에서 발견)
+  '입출력': 'bg-blue-400/15 text-blue-400',
+  '사칙연산': 'bg-amber-400/15 text-amber-400',
+  '배열': 'bg-cyan-400/15 text-cyan-400',
+  '반복문': 'bg-green-400/15 text-green-400',
+  '조건문': 'bg-yellow-400/15 text-yellow-400',
+  '재귀': 'bg-purple-400/15 text-purple-400',
+  '큰 수': 'bg-rose-400/15 text-rose-400',
+  '임의 정밀도': 'bg-rose-400/15 text-rose-400',
 };
 
 export const FALLBACK_COLORS = [

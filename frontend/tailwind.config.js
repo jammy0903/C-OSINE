@@ -5,6 +5,17 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   darkMode: 'class',
+  // 동적 클래스 보장 (태그 색상용)
+  safelist: [
+    // 태그 배경색
+    { pattern: /bg-(indigo|red|amber|emerald|cyan|orange|pink|violet|lime|teal|blue|green|yellow|purple|rose|sky)-\d+\/\d+/ },
+    // 태그 텍스트색
+    { pattern: /text-(indigo|red|amber|emerald|cyan|orange|pink|violet|lime|teal|blue|green|yellow|purple|rose|sky)-\d+/ },
+    // 난이도 배경색
+    { pattern: /bg-(amber|slate)-\d+\/\d+/ },
+    // 난이도 텍스트색
+    { pattern: /text-(amber|slate)-\d+/ },
+  ],
   theme: {
     extend: {
       colors: {
